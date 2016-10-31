@@ -1,6 +1,9 @@
 #pragma once
 
-#include "LauncherForm.h" // for globals
+#include "Player.h"
+#include "Team.h"
+#include "Venue.h"
+#include "../AnalyzerLibrary/AnalyzerLibrary.h"
 
 #define EXPORTRECT 320,0,1280,1080
 #define MOTIONRECT 320,600,640,480
@@ -22,11 +25,11 @@ namespace Uploader2 {
 	public ref class ImportForm : public System::Windows::Forms::Form
 	{
 	public:
-		ImportForm(Logger ^_log, Services ^_svc, int _teamId)
+		ImportForm(Logger ^_log, Services ^_svc, Team^ _team)
 		{
 			InitializeComponent();
 			this->log = _log;
-			this->teamId = _teamId;
+			this->team = _team;
 			this->svc = _svc;
 			LOGINFO("Created Import Form");
 		}
@@ -43,16 +46,13 @@ namespace Uploader2 {
 			}
 		}
 	private: System::Windows::Forms::Label^  label1;
-	protected:
 	private: System::Windows::Forms::ListView^  lvFiles;
 	private: System::Windows::Forms::ColumnHeader^  chName;
 	private: System::Windows::Forms::ColumnHeader^  chDate;
 	private: System::Windows::Forms::Button^  bImport;
 	private: System::Windows::Forms::TextBox^  tbDesc;
-
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Timer^  timer1;
-
 	private: System::Windows::Forms::Label^  label3;
 	private: System::Windows::Forms::ComboBox^  cbPlayer;
 	private: System::Windows::Forms::StatusStrip^  statusStrip1;
@@ -61,6 +61,18 @@ namespace Uploader2 {
 	private: System::Windows::Forms::ToolStripProgressBar^  toolStripProgressBar1;
 	private: System::Windows::Forms::CheckBox^  cbLimit;
 	private: System::Windows::Forms::TextBox^  tbLimit;
+	private: System::Windows::Forms::Label^  lbTeamName;
+	private: System::Windows::Forms::Label^  label4;
+	private: System::Windows::Forms::ComboBox^  cbVenue;
+	private: System::Windows::Forms::Label^  label5;
+	private: System::Windows::Forms::ComboBox^  cbField;
+	private: System::Windows::Forms::Label^  label6;
+	private: System::Windows::Forms::Label^  label7;
+	private: System::Windows::Forms::TrackBar^  trackBar1;
+	private: System::Windows::Forms::Button^  btNewVenue;
+	private: System::Windows::Forms::Button^  btNewFieldd;
+	private: System::Windows::Forms::Label^  lbStationValue;
+
 	private: System::ComponentModel::IContainer^  components;
 
 	private:
@@ -93,7 +105,19 @@ namespace Uploader2 {
 			this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
 			this->cbLimit = (gcnew System::Windows::Forms::CheckBox());
 			this->tbLimit = (gcnew System::Windows::Forms::TextBox());
+			this->lbTeamName = (gcnew System::Windows::Forms::Label());
+			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->cbVenue = (gcnew System::Windows::Forms::ComboBox());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->cbField = (gcnew System::Windows::Forms::ComboBox());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->label7 = (gcnew System::Windows::Forms::Label());
+			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
+			this->btNewVenue = (gcnew System::Windows::Forms::Button());
+			this->btNewFieldd = (gcnew System::Windows::Forms::Button());
+			this->lbStationValue = (gcnew System::Windows::Forms::Label());
 			this->statusStrip1->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// label1
@@ -101,7 +125,7 @@ namespace Uploader2 {
 			this->label1->AutoSize = true;
 			this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label1->Location = System::Drawing::Point(12, 9);
+			this->label1->Location = System::Drawing::Point(12, 37);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(308, 20);
 			this->label1->TabIndex = 0;
@@ -110,7 +134,7 @@ namespace Uploader2 {
 			// lvFiles
 			// 
 			this->lvFiles->Columns->AddRange(gcnew cli::array< System::Windows::Forms::ColumnHeader^  >(2) { this->chName, this->chDate });
-			this->lvFiles->Location = System::Drawing::Point(16, 32);
+			this->lvFiles->Location = System::Drawing::Point(16, 60);
 			this->lvFiles->MultiSelect = false;
 			this->lvFiles->Name = L"lvFiles";
 			this->lvFiles->Size = System::Drawing::Size(458, 140);
@@ -133,7 +157,7 @@ namespace Uploader2 {
 			// 
 			this->bImport->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bImport->Location = System::Drawing::Point(204, 301);
+			this->bImport->Location = System::Drawing::Point(202, 440);
 			this->bImport->Name = L"bImport";
 			this->bImport->Size = System::Drawing::Size(86, 33);
 			this->bImport->TabIndex = 2;
@@ -143,7 +167,7 @@ namespace Uploader2 {
 			// 
 			// tbDesc
 			// 
-			this->tbDesc->Location = System::Drawing::Point(16, 275);
+			this->tbDesc->Location = System::Drawing::Point(16, 303);
 			this->tbDesc->Name = L"tbDesc";
 			this->tbDesc->Size = System::Drawing::Size(454, 20);
 			this->tbDesc->TabIndex = 3;
@@ -153,7 +177,7 @@ namespace Uploader2 {
 			this->label2->AutoSize = true;
 			this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label2->Location = System::Drawing::Point(12, 252);
+			this->label2->Location = System::Drawing::Point(12, 280);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(252, 20);
 			this->label2->TabIndex = 4;
@@ -168,7 +192,7 @@ namespace Uploader2 {
 			this->label3->AutoSize = true;
 			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label3->Location = System::Drawing::Point(12, 188);
+			this->label3->Location = System::Drawing::Point(12, 216);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(167, 20);
 			this->label3->TabIndex = 6;
@@ -177,7 +201,7 @@ namespace Uploader2 {
 			// cbPlayer
 			// 
 			this->cbPlayer->FormattingEnabled = true;
-			this->cbPlayer->Location = System::Drawing::Point(16, 211);
+			this->cbPlayer->Location = System::Drawing::Point(16, 239);
 			this->cbPlayer->Name = L"cbPlayer";
 			this->cbPlayer->Size = System::Drawing::Size(458, 21);
 			this->cbPlayer->TabIndex = 7;
@@ -185,7 +209,7 @@ namespace Uploader2 {
 			// statusStrip1
 			// 
 			this->statusStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->sslStat, this->toolStripProgressBar1 });
-			this->statusStrip1->Location = System::Drawing::Point(0, 355);
+			this->statusStrip1->Location = System::Drawing::Point(0, 491);
 			this->statusStrip1->Name = L"statusStrip1";
 			this->statusStrip1->Size = System::Drawing::Size(497, 22);
 			this->statusStrip1->TabIndex = 8;
@@ -194,7 +218,7 @@ namespace Uploader2 {
 			// sslStat
 			// 
 			this->sslStat->Name = L"sslStat";
-			this->sslStat->Size = System::Drawing::Size(38, 17);
+			this->sslStat->Size = System::Drawing::Size(39, 17);
 			this->sslStat->Text = L"Ready";
 			// 
 			// toolStripProgressBar1
@@ -211,7 +235,7 @@ namespace Uploader2 {
 			// cbLimit
 			// 
 			this->cbLimit->AutoSize = true;
-			this->cbLimit->Location = System::Drawing::Point(337, 311);
+			this->cbLimit->Location = System::Drawing::Point(335, 450);
 			this->cbLimit->Name = L"cbLimit";
 			this->cbLimit->Size = System::Drawing::Size(87, 17);
 			this->cbLimit->TabIndex = 9;
@@ -220,18 +244,140 @@ namespace Uploader2 {
 			// 
 			// tbLimit
 			// 
-			this->tbLimit->Location = System::Drawing::Point(431, 311);
+			this->tbLimit->Location = System::Drawing::Point(429, 450);
 			this->tbLimit->Name = L"tbLimit";
 			this->tbLimit->Size = System::Drawing::Size(39, 20);
 			this->tbLimit->TabIndex = 10;
 			this->tbLimit->Text = L"7";
+			// 
+			// lbTeamName
+			// 
+			this->lbTeamName->AutoSize = true;
+			this->lbTeamName->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->lbTeamName->Location = System::Drawing::Point(110, 7);
+			this->lbTeamName->Name = L"lbTeamName";
+			this->lbTeamName->Size = System::Drawing::Size(29, 20);
+			this->lbTeamName->TabIndex = 11;
+			this->lbTeamName->Text = L"nn";
+			// 
+			// label4
+			// 
+			this->label4->AutoSize = true;
+			this->label4->Location = System::Drawing::Point(13, 12);
+			this->label4->Name = L"label4";
+			this->label4->Size = System::Drawing::Size(96, 13);
+			this->label4->TabIndex = 12;
+			this->label4->Text = L"Uploading to team:";
+			// 
+			// cbVenue
+			// 
+			this->cbVenue->FormattingEnabled = true;
+			this->cbVenue->Location = System::Drawing::Point(70, 333);
+			this->cbVenue->Name = L"cbVenue";
+			this->cbVenue->Size = System::Drawing::Size(308, 21);
+			this->cbVenue->TabIndex = 14;
+			this->cbVenue->SelectedIndexChanged += gcnew System::EventHandler(this, &ImportForm::cbVenue_SelectedIndexChanged);
+			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(25, 336);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(38, 13);
+			this->label5->TabIndex = 13;
+			this->label5->Text = L"Venue";
+			// 
+			// cbField
+			// 
+			this->cbField->FormattingEnabled = true;
+			this->cbField->Location = System::Drawing::Point(70, 361);
+			this->cbField->Name = L"cbField";
+			this->cbField->Size = System::Drawing::Size(308, 21);
+			this->cbField->TabIndex = 16;
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(34, 365);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(29, 13);
+			this->label6->TabIndex = 15;
+			this->label6->Text = L"Field";
+			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Location = System::Drawing::Point(23, 399);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(40, 13);
+			this->label7->TabIndex = 17;
+			this->label7->Text = L"Station";
+			// 
+			// trackBar1
+			// 
+			this->trackBar1->LargeChange = 1;
+			this->trackBar1->Location = System::Drawing::Point(90, 387);
+			this->trackBar1->Maximum = 5;
+			this->trackBar1->Minimum = 1;
+			this->trackBar1->Name = L"trackBar1";
+			this->trackBar1->Size = System::Drawing::Size(115, 45);
+			this->trackBar1->TabIndex = 18;
+			this->trackBar1->TickStyle = System::Windows::Forms::TickStyle::Both;
+			this->trackBar1->Value = 1;
+			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &ImportForm::trackBar1_ValueChanged);
+			// 
+			// btNewVenue
+			// 
+			this->btNewVenue->Location = System::Drawing::Point(384, 332);
+			this->btNewVenue->Name = L"btNewVenue";
+			this->btNewVenue->Size = System::Drawing::Size(84, 25);
+			this->btNewVenue->TabIndex = 19;
+			this->btNewVenue->Text = L"New Venue...";
+			this->btNewVenue->UseVisualStyleBackColor = true;
+			this->btNewVenue->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ImportForm::btNewVenue_MouseClick);
+			// 
+			// btNewFieldd
+			// 
+			this->btNewFieldd->Location = System::Drawing::Point(384, 359);
+			this->btNewFieldd->Name = L"btNewFieldd";
+			this->btNewFieldd->Size = System::Drawing::Size(84, 25);
+			this->btNewFieldd->TabIndex = 20;
+			this->btNewFieldd->Text = L"New Field...";
+			this->btNewFieldd->UseVisualStyleBackColor = true;
+			this->btNewFieldd->Click += gcnew System::EventHandler(this, &ImportForm::btNewFieldd_Click);
+			// 
+			// lbStationValue
+			// 
+			this->lbStationValue->AutoSize = true;
+			this->lbStationValue->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->lbStationValue->FlatStyle = System::Windows::Forms::FlatStyle::System;
+			this->lbStationValue->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->lbStationValue->Location = System::Drawing::Point(70, 399);
+			this->lbStationValue->Name = L"lbStationValue";
+			this->lbStationValue->Size = System::Drawing::Size(17, 18);
+			this->lbStationValue->TabIndex = 21;
+			this->lbStationValue->Text = L"1";
+			this->lbStationValue->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
 			// ImportForm
 			// 
 			this->AllowDrop = true;
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(497, 377);
+			this->ClientSize = System::Drawing::Size(497, 513);
+			this->Controls->Add(this->lbStationValue);
+			this->Controls->Add(this->btNewFieldd);
+			this->Controls->Add(this->btNewVenue);
+			this->Controls->Add(this->trackBar1);
+			this->Controls->Add(this->label7);
+			this->Controls->Add(this->cbField);
+			this->Controls->Add(this->label6);
+			this->Controls->Add(this->cbVenue);
+			this->Controls->Add(this->label5);
+			this->Controls->Add(this->label4);
+			this->Controls->Add(this->lbTeamName);
 			this->Controls->Add(this->tbLimit);
 			this->Controls->Add(this->cbLimit);
 			this->Controls->Add(this->statusStrip1);
@@ -249,6 +395,7 @@ namespace Uploader2 {
 			this->DragEnter += gcnew System::Windows::Forms::DragEventHandler(this, &ImportForm::ImportForm_DragEnter);
 			this->statusStrip1->ResumeLayout(false);
 			this->statusStrip1->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -256,254 +403,36 @@ namespace Uploader2 {
 #pragma endregion
 
 	private:
-		array<array<String ^> ^> ^userList;
+		System::Void ImportForm_Load(System::Object^  sender, System::EventArgs^  e);
+		System::Void bImport_Click(System::Object^  sender, System::EventArgs^  e);
+
+		System::Void importProcess(Object ^sender, DoWorkEventArgs ^e);
+
+		System::Void ImportForm_DragDrop(System::Object^  sender, System::Windows::Forms::DragEventArgs^  e);
+		System::Void ImportForm_DragEnter(System::Object^  sender, System::Windows::Forms::DragEventArgs^  e);
+		System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e);
+		System::Void reportProgress(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
+		System::Void backgroundWorker1_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
+		System::Void lvFiles_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e);
+		System::Void cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e);
+		System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e);
+		System::Void btNewVenue_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		System::Void btNewFieldd_Click(System::Object^  sender, System::EventArgs^  e);
+
+		bool loadUsers();
+		bool loadVenues();
+
+	private:
+		System::Collections::Generic::List<Player^> users;
+		System::Collections::Generic::List<Venue^> venues;
 		Logger ^log;
 		Services ^svc;
-		int teamId;
+		Team^ team;
 
 		String ^folder;
 		array<String ^> ^lvi;
 		int selIndex;
 		Boolean done;
 		int uploadCountLimit;
-
-	private: System::Void ImportForm_Load(System::Object^  sender, System::EventArgs^  e) {
-		this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
-
-		if (svc->isLocalClient())
-			cbLimit->Checked = true;
-
-		LOGINFO("Starting authentication timer for 15 minutes");
-		timer1->Interval = 1000 * 15 * 60; // 15 minutes
-		timer1->Start();
-
-		// Get a list of all users on a team
-		LOGINFO("Getting a list of all team members");
-		String ^msg;
-		userList = svc->getUserList(teamId.ToString(), msg); // returns id, nickname, email
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			return;
-		}
-		// Show their emails in a list to pick from
-		for (int i = 0; i < userList[1]->Length; i++)
-		{
-			cbPlayer->Items->Add(userList[1][i] + " (" + userList[2][i] + ")"); // nick name (email)
-		}
-
-		// If atleat one player is on the list, select that player
-		if (userList[1]->Length > 0)
-			cbPlayer->SelectedIndex = 0;
-
-		// Update the title of this form
-		if (svc->isLocalClient())
-			this->Text = VERSION + ": " + svc->getShareName();
-		else
-			this->Text = VERSION + ": cloud";
-	}
-	private: System::Void bImport_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (bImport->Text->Equals("Cancel"))
-		{
-			LOGINFO("Cancel");
-			bImport->Text = "Import";
-			backgroundWorker1->CancelAsync();
-			return;
-		}
-
-		LOGINFO("Import clicked");
-		if (tbDesc->Text->Trim()->Equals(""))
-		{
-			MessageBox::Show("Please enter a brief description.");
-			return;
-		}
-		if (lvFiles->Items->Count == 0)
-		{
-			MessageBox::Show("Please add some files to process.");
-			return;
-		}
-		if (cbPlayer->SelectedIndex < 0)
-		{
-			MessageBox::Show("Please select the player that this upload belongs to.");
-			return;
-		}
-
-		// Create folder in AppData.  Sanitize special characters from the description
-		String ^desc = tbDesc->Text->Replace("*", "x")->Replace("\\", "")->Replace("|", "I")->Replace("/", ",")->Replace(">", "")->Replace("<", "")->Replace(":", ";")->Replace("\"", "'")->Replace("?", "");
-		folder = Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\" + desc + " " + DateTime::Now.ToString("MM-dd-yyyy h-mm-ss tt");
-		try {
-			Directory::CreateDirectory(folder);
-		}
-		catch (Exception ^e) {
-			MessageBox::Show("System exception while creating import directory " + folder + " " + e->Message);
-			return;
-		}
-		if (!System::IO::Directory::Exists(folder))
-		{
-			MessageBox::Show("Could not create import directory " + folder);
-			return;
-		}
-
-		backgroundWorker1->WorkerReportsProgress = true;
-		backgroundWorker1->WorkerSupportsCancellation = true;
-		lvi = gcnew array<String ^>(lvFiles->Items->Count);
-		for (int i = 0; i < lvFiles->Items->Count; i++)
-			lvi->SetValue(lvFiles->Items[i]->Text, i);
-		selIndex = cbPlayer->SelectedIndex;
-		toolStripProgressBar1->Minimum = 0;
-		toolStripProgressBar1->Maximum = 100;
-		done = false;
-
-		bImport->Text = "Cancel";
-		uploadCountLimit = -1;
-		if (cbLimit->Checked)
-		{
-			try {
-				uploadCountLimit = Int32::Parse(tbLimit->Text);
-			}
-			catch (Exception ^e)
-			{
-				MessageBox::Show("Upload limit ignored." + e->Message);
-				uploadCountLimit = -1;
-			}
-		}
-		backgroundWorker1->RunWorkerAsync();
-	}
-
-	private: System::Void importProcess(Object ^sender, DoWorkEventArgs ^e)
-	{
-		BackgroundWorker ^worker = (BackgroundWorker ^)sender;
-		Importer ^imp = gcnew Importer(log);
-
-		// Do a quick check of the file formats prior to copy
-		for (int i = 0; i < lvi->Length; i++)
-		{
-			if (worker->CancellationPending == true)
-			{
-				e->Cancel = true;
-				return;
-			} 
-			else 
-			{
-				worker->ReportProgress( (int)(0.5+100.0 * i / lvi->Length), "Checking");
-				String ^msg;
-				imp->checkSourceVideoHasValidFormat((String ^)lvi->GetValue(i), msg);
-				if (msg->Length > 0)
-				{
-					MessageBox::Show(msg);
-					return;
-				}
-			}
-		}
-
-		// Index the files ...
-		String ^manifest = folder + "\\manifest.txt";
-		StreamWriter ^file = gcnew StreamWriter(manifest);
-		try {
-			file->WriteLine("desc:" + tbDesc->Text);
-		}
-		catch (Exception ^e)
-		{
-			MessageBox::Show("Could not write to manifest file " + manifest + " " + e->Message);
-			return;
-		}
-
-		String ^msg;
-		String ^did = svc->createDataset2(userList[0][selIndex], tbDesc->Text, this->teamId.ToString(), msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			return;
-		}
-
-		int nitems = 0;
-		Boolean forceDone = false;
-		for (int i = 0; i < lvi->Length && !forceDone; i++)
-		{
-
-			worker->ReportProgress((int)(0.5+100.0 * i / lvi->Length), "Triaging ...");
-
-			DateTime ^dt;
-			imp->extractAudio((String ^)lvi->GetValue(i), dt, msg);
-			if (msg->Length > 0)
-			{
-				MessageBox::Show(msg);
-				return;
-			}
-			if (i==0)
-				file->WriteLine("created:" + dt->ToString("u")); // write to file in Universal format
-
-			worker->ReportProgress((int)(0.5+100.0 * i / lvi->Length), "Indexing ...");
-			imp->indexAndUpload2(svc, (String ^)lvi->GetValue(i), Drawing::Rectangle(EXPORTRECT), Drawing::Rectangle(MOTIONRECT),
-				i, uploadCountLimit, &nitems,
-				file, folder, did,
-				worker, e, &forceDone, msg);
-			if ( msg->Length > 0)
-			{
-				MessageBox::Show(msg);
-				return;
-			};
-		}
-		file->Close();
-
-		svc->uploadAsset("dataset", did, "txt", manifest, msg);
-		if (msg->Length > 0)
-			MessageBox::Show(msg);
-
-		if (!svc->closeDataset(did, msg))
-			MessageBox::Show(msg);
-
-		done = true;
-	}
-	private: System::Void ImportForm_DragDrop(System::Object^  sender, System::Windows::Forms::DragEventArgs^  e) {
-		LOGINFO("Import Form: File(s) dragged into the window");
-		array<String^>^files = (array<String^>^)(e->Data->GetData(DataFormats::FileDrop, false));
-		lvFiles->Items->Clear();
-		for (int i = 0; i < files->Length; i++)
-		{
-			String ^s = (String ^)files->GetValue(i);
-			LOGINFO("Import Form: File: "+s);
-			if (s->ToLower()->EndsWith("mp4"))
-			{
-				lvFiles->Items->Add(gcnew ListViewItem(s));
-			}
-		}
-	}
-	private: System::Void ImportForm_DragEnter(System::Object^  sender, System::Windows::Forms::DragEventArgs^  e) {
-		if (e->Data->GetDataPresent(DataFormats::FileDrop))
-			e->Effect = DragDropEffects::All;
-		else
-			e->Effect = DragDropEffects::None;
-	}
-	private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
-		LOGINFO("Import Form: Re-auth timer tick");
-		svc->renewToken();
-	}
-	private: System::Void reportProgress(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e) {
-		String ^s = (String ^)e->UserState;
-		sslStat->Text = s;
-		toolStripProgressBar1->Value = e->ProgressPercentage;
-	}
-	private: System::Void backgroundWorker1_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
-		if (e->Cancelled)
-			MessageBox::Show("Import cancelled");
-		else
-			if (done == false)
-				MessageBox::Show("Import failed");
-		sslStat->Text = "Ready";
-		bImport->Text = "Import";
-		toolStripProgressBar1->Value = 0;
-		this->Close();
-	}
-	private: System::Void lvFiles_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
-		LOGINFO("Import Form: Delete key pressed on one of the items"); // Multi-seect is disabled, so only one item
-		if ((Keys)e->KeyCode == Keys::Delete)
-		{
-			for (int i = 0; i < lvFiles->Items->Count; i++) {
-				if (lvFiles->Items[i]->Selected)
-					lvFiles->Items[i]->Remove();
-			}
-		}
-	}
 };
 }

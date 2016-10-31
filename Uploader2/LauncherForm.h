@@ -5,6 +5,8 @@
 #include "ImportForm.h"
 #include "ScoreForm.h"
 #include "ChooseDSForm.h"
+#include "Player.h"
+#include "Team.h"
 
 namespace Uploader2 {
 
@@ -21,11 +23,12 @@ namespace Uploader2 {
 	public ref class LauncherForm : public System::Windows::Forms::Form
 	{
 	public:
-		LauncherForm(Logger ^_log, Services ^_svc, int _teamId)
+		LauncherForm(Logger ^_log, Services ^_svc, String^ email, Team^ _team)
 		{
 			InitializeComponent();
 			this->log = _log;
-			this->teamId = _teamId;
+			this->team = _team;
+			this->email = email;
 			this->svc = _svc;
 			LOGINFO("Created Launcher Form");
 		}
@@ -43,15 +46,13 @@ namespace Uploader2 {
 		}
 	private: System::Windows::Forms::Button^  bImport;
 	private: System::Windows::Forms::Button^  bScore;
-
-
 	private: System::Windows::Forms::Button^  button1;
-	protected:
-
-
-
-	protected:
-
+	private: System::Windows::Forms::Label^  label1;
+	private: System::Windows::Forms::Label^  label2;
+	private: System::Windows::Forms::Label^  label3;
+	private: System::Windows::Forms::TextBox^  tbTeamName;
+	private: System::Windows::Forms::TextBox^  tbCoach;
+	private: System::Windows::Forms::TextBox^  tbAnalyzer;
 	private:
 		/// <summary>
 		/// Required designer variable.
@@ -68,13 +69,19 @@ namespace Uploader2 {
 			this->bImport = (gcnew System::Windows::Forms::Button());
 			this->bScore = (gcnew System::Windows::Forms::Button());
 			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->label2 = (gcnew System::Windows::Forms::Label());
+			this->label3 = (gcnew System::Windows::Forms::Label());
+			this->tbTeamName = (gcnew System::Windows::Forms::TextBox());
+			this->tbCoach = (gcnew System::Windows::Forms::TextBox());
+			this->tbAnalyzer = (gcnew System::Windows::Forms::TextBox());
 			this->SuspendLayout();
 			// 
 			// bImport
 			// 
 			this->bImport->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bImport->Location = System::Drawing::Point(42, 12);
+			this->bImport->Location = System::Drawing::Point(45, 116);
 			this->bImport->Name = L"bImport";
 			this->bImport->Size = System::Drawing::Size(295, 47);
 			this->bImport->TabIndex = 0;
@@ -87,7 +94,7 @@ namespace Uploader2 {
 			this->bScore->Enabled = false;
 			this->bScore->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bScore->Location = System::Drawing::Point(42, 130);
+			this->bScore->Location = System::Drawing::Point(45, 234);
 			this->bScore->Name = L"bScore";
 			this->bScore->Size = System::Drawing::Size(295, 47);
 			this->bScore->TabIndex = 3;
@@ -99,7 +106,7 @@ namespace Uploader2 {
 			// 
 			this->button1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button1->Location = System::Drawing::Point(42, 63);
+			this->button1->Location = System::Drawing::Point(45, 167);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(295, 47);
 			this->button1->TabIndex = 1;
@@ -107,11 +114,68 @@ namespace Uploader2 {
 			this->button1->UseVisualStyleBackColor = true;
 			this->button1->Click += gcnew System::EventHandler(this, &LauncherForm::button1_Click_1);
 			// 
+			// label1
+			// 
+			this->label1->AutoSize = true;
+			this->label1->Location = System::Drawing::Point(54, 29);
+			this->label1->Name = L"label1";
+			this->label1->Size = System::Drawing::Size(37, 13);
+			this->label1->TabIndex = 4;
+			this->label1->Text = L"Team:";
+			// 
+			// label2
+			// 
+			this->label2->AutoSize = true;
+			this->label2->Location = System::Drawing::Point(41, 53);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(50, 13);
+			this->label2->TabIndex = 5;
+			this->label2->Text = L"Analyzer:";
+			// 
+			// label3
+			// 
+			this->label3->AutoSize = true;
+			this->label3->Location = System::Drawing::Point(50, 79);
+			this->label3->Name = L"label3";
+			this->label3->Size = System::Drawing::Size(41, 13);
+			this->label3->TabIndex = 6;
+			this->label3->Text = L"Coach:";
+			// 
+			// tbTeamName
+			// 
+			this->tbTeamName->Location = System::Drawing::Point(95, 22);
+			this->tbTeamName->Name = L"tbTeamName";
+			this->tbTeamName->ReadOnly = true;
+			this->tbTeamName->Size = System::Drawing::Size(245, 20);
+			this->tbTeamName->TabIndex = 7;
+			// 
+			// tbCoach
+			// 
+			this->tbCoach->Location = System::Drawing::Point(95, 78);
+			this->tbCoach->Name = L"tbCoach";
+			this->tbCoach->ReadOnly = true;
+			this->tbCoach->Size = System::Drawing::Size(245, 20);
+			this->tbCoach->TabIndex = 8;
+			// 
+			// tbAnalyzer
+			// 
+			this->tbAnalyzer->Location = System::Drawing::Point(95, 50);
+			this->tbAnalyzer->Name = L"tbAnalyzer";
+			this->tbAnalyzer->ReadOnly = true;
+			this->tbAnalyzer->Size = System::Drawing::Size(245, 20);
+			this->tbAnalyzer->TabIndex = 9;
+			// 
 			// LauncherForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(394, 124);
+			this->ClientSize = System::Drawing::Size(394, 232);
+			this->Controls->Add(this->tbAnalyzer);
+			this->Controls->Add(this->tbCoach);
+			this->Controls->Add(this->tbTeamName);
+			this->Controls->Add(this->label3);
+			this->Controls->Add(this->label2);
+			this->Controls->Add(this->label1);
 			this->Controls->Add(this->button1);
 			this->Controls->Add(this->bScore);
 			this->Controls->Add(this->bImport);
@@ -119,37 +183,22 @@ namespace Uploader2 {
 			this->Text = L"TRIFECTA Uploader: Select an activity";
 			this->Load += gcnew System::EventHandler(this, &LauncherForm::LauncherForm_Load);
 			this->ResumeLayout(false);
+			this->PerformLayout();
 
 		}
 #pragma endregion
-	private: 
-		Logger ^log;
-		Services ^svc;
-		String ^workfolder;
-		int teamId;
 
-	private: System::Void LauncherForm_Load(System::Object^  sender, System::EventArgs^  e) {
-		this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
-		workfolder = "";
-	}
-	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-		ImportForm ^importForm = gcnew ImportForm(log, svc, teamId);
-		this->Hide();
-		importForm->ShowDialog();
-		this->Show();
-	}
-	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
-		ScoreForm ^sf = gcnew ScoreForm(log, svc, workfolder);
-		this->Hide();
-		sf->ShowDialog();
-		this->Show();
-	}
-	private: System::Void button1_Click_1(System::Object^  sender, System::EventArgs^  e) {
-		ChooseDSForm ^cds = gcnew ChooseDSForm(log, svc, teamId);
-		this->Hide();
-		cds->ShowDialog();
-		this->Show();
-		workfolder = cds->getFolder();
-	}
-};
+		private:
+			System::Void LauncherForm_Load(System::Object^  sender, System::EventArgs^  e);
+			System::Void button1_Click(System::Object^  sender, System::EventArgs^  e);
+			System::Void button2_Click(System::Object^  sender, System::EventArgs^  e);
+			System::Void button1_Click_1(System::Object^  sender, System::EventArgs^  e);
+
+		private:
+			Logger^ log;
+			Services^ svc;
+			String^ workfolder;
+			Team^ team;
+			String^ email;
+	};
 }

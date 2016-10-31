@@ -1,8 +1,10 @@
 #pragma once
-
+#include "../AnalyzerLibrary/AnalyzerLibrary.h"
+#include "Player.h"
 #include "TeamForm.h"
 #include "ImportForm.h"
 #include "LauncherForm.h"
+#include "UsernameCache.h"
 
 namespace Uploader2 {
 
@@ -40,16 +42,12 @@ namespace Uploader2 {
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::Button^  bSignIn;
-	private: System::Windows::Forms::TextBox^  tbUser;
-	protected:
-
-	protected:
-
-	private: System::Windows::Forms::Label^  label1;
-	private: System::Windows::Forms::Label^  label2;
-	private: System::Windows::Forms::TextBox^  tbPwd;
-
+	private:
+		System::Windows::Forms::Button^  bSignIn;
+		System::Windows::Forms::TextBox^  tbUser;
+		System::Windows::Forms::Label^  label1;
+		System::Windows::Forms::Label^  label2;
+		System::Windows::Forms::TextBox^  tbPwd;
 
 	private:
 		/// <summary>
@@ -83,6 +81,8 @@ namespace Uploader2 {
 			// 
 			// tbUser
 			// 
+			this->tbUser->AutoCompleteMode = System::Windows::Forms::AutoCompleteMode::Suggest;
+			this->tbUser->AutoCompleteSource = System::Windows::Forms::AutoCompleteSource::CustomSource;
 			this->tbUser->Location = System::Drawing::Point(106, 31);
 			this->tbUser->Name = L"tbUser";
 			this->tbUser->Size = System::Drawing::Size(247, 20);
@@ -113,6 +113,7 @@ namespace Uploader2 {
 			this->tbPwd->PasswordChar = '*';
 			this->tbPwd->Size = System::Drawing::Size(247, 20);
 			this->tbPwd->TabIndex = 4;
+			this->tbPwd->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &LoginForm::tbPwd_KeyPress);
 			// 
 			// LoginForm
 			// 
@@ -138,60 +139,11 @@ namespace Uploader2 {
 		String ^user;
 		String ^pwd;
 
-	private: System::Void bSignIn_Click(System::Object^  sender, System::EventArgs^  e) {
-		LOGINFO("Sign-in clicked.");
-		if (!svc->authenticate(tbUser->Text, tbPwd->Text))
-		{
-			LOGWARN("Sign-in: Login or web service failed.");
-			System::Windows::Forms::DialogResult dialogResult = MessageBox::Show("Login failed.  Try again?",
-				"Check credentials", MessageBoxButtons::YesNo);
-			if (dialogResult == System::Windows::Forms::DialogResult::No)
-				this->Close();
-		}
-		else
-		{
-			LOGINFO("Sign-in: Got login token.  Getting user roles.");
-			int role = svc->getRoles();
-			if (role & (ROLE_ANALYZER | ROLE_OWNER))
-			{
-				LOGINFO("Sign-In: user is an Analyzer or the owner");
-				this->Hide();
+		UsernameCache cache;
 
-				TeamForm ^tf = gcnew TeamForm(log, svc, true);
-				tf->ShowDialog();
-				if (tf->DialogResult == Windows::Forms::DialogResult::OK)
-				{
-					LauncherForm ^lf = gcnew LauncherForm(log, svc, tf->getTeamId());
-					lf->ShowDialog();
-				}
-				this->Close();
-			}
-			else if (role & ROLE_COACH)
-			{
-				LOGINFO("Sign-In: user is a coach");
-				this->Hide();
-
-				TeamForm ^tf = gcnew TeamForm(log, svc, false);
-				tf->ShowDialog();
-				if (tf->DialogResult == Windows::Forms::DialogResult::OK)
-				{
-					//tf->getTeamId();
-					ImportForm ^imf = gcnew ImportForm(log, svc, tf->getTeamId());
-					imf->ShowDialog();
-				}
-				this->Close();
-			}
-			else
-			{
-				MessageBox::Show("You do not have any roles defined for using this product.");
-				this->Close();
-			}
-		}
-	}
-private: System::Void LoginForm_Load(System::Object^  sender, System::EventArgs^  e) {
-	this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
-	tbUser->Text = user;
-	tbPwd->Text = pwd;
-}
-};
+		private: System::Void login();
+		private: System::Void bSignIn_Click(System::Object^  sender, System::EventArgs^  e);
+		private: System::Void LoginForm_Load(System::Object^  sender, System::EventArgs^  e);
+		private: System::Void tbPwd_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e);
+	};
 }

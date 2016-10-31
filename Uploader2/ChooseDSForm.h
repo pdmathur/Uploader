@@ -1,7 +1,5 @@
 #pragma once
-
-#include "../AnalyzerLibrary/AnalyzerLibrary.h"
-#include "LauncherForm.h"
+#include "Team.h"
 
 namespace Uploader2 {
 
@@ -12,6 +10,7 @@ namespace Uploader2 {
 	using namespace System::Data;
 	using namespace System::Drawing;
 	using namespace System::Threading;
+	using namespace AnalyzerLibrary;
 
 	/// <summary>
 	/// Summary for ChooseDSForm
@@ -19,12 +18,12 @@ namespace Uploader2 {
 	public ref class ChooseDSForm : public System::Windows::Forms::Form
 	{
 	public:
-		ChooseDSForm(Logger ^_log, Services ^_svc, int teamId)
+		ChooseDSForm(Logger ^_log, Services ^_svc, Team^ team)
 		{
 			InitializeComponent();
 			this->log = _log;
 			this->svc = _svc;
-			this->teamId = teamId.ToString();
+			this->team = team;
 		}
 
 	protected:
@@ -156,6 +155,14 @@ namespace Uploader2 {
 		}
 #pragma endregion
 
+	public:
+		String ^ getFolder() { return folder; }
+	private:
+		System::Void bSelect_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void ChooseDSForm_Load(System::Object^  sender, System::EventArgs^  e);
+		System::Void bwBackgnd_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
+		System::Void bwBackgnd_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
+		System::Void bwBackgnd_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
 	private:
 		Services ^svc;
 		array<array<String ^>^> ^nl;
@@ -163,167 +170,7 @@ namespace Uploader2 {
 		String ^folder;
 		Logger ^log;
 		String ^uid;
-		String ^teamId;
+		Team ^team;
 		Boolean done;
-
-	public: String ^ getFolder() { return folder; }
-
-	private: System::Void bSelect_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (bSelect->Text->Equals("Cancel"))
-		{
-			LOGINFO("Download Cancel");
-			bSelect->Text = "Select/Download";
-			bwBackgnd->CancelAsync();
-			return;
-		}
-		if (cbPendingList->SelectedIndex < 0)
-		{
-			System::Windows::Forms::MessageBox::Show("Please select an event to analyze from the pull down list");
-			return;
-		}
-
-		String ^msg;
-		nl2 = svc->getDatasetAssets(nl[0][cbPendingList->SelectedIndex], msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			return;
-		}
-
-		String ^desc = nl[1][cbPendingList->SelectedIndex];
-		if (desc->Equals("null"))
-			desc = "no description set";
-		desc = desc + " " + nl[0][cbPendingList->SelectedIndex] + " " + nl[2][cbPendingList->SelectedIndex];
-		desc = desc->Replace("*", "x")->Replace("\\", "")->Replace("|", "I")->Replace("/", ",")->Replace(">", "")->Replace("<", "")->Replace(":", ";")->Replace("\"", "'")->Replace("?", "");
-		folder = System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\" + desc;
-
-		if (System::IO::File::Exists(folder + "\\dlmanifest.txt"))
-		{
-			System::Windows::Forms::DialogResult dialogResult = System::Windows::Forms::MessageBox::Show("This folder already exists.  Re-download?",
-				"Confirm Re-download", System::Windows::Forms::MessageBoxButtons::YesNo);
-			if (dialogResult == System::Windows::Forms::DialogResult::No)
-			{
-				ScoreForm ^sf = gcnew ScoreForm(log, svc, folder);
-				this->Hide();
-				sf->ShowDialog();
-				this->Show();
-			}
-
-				return;
-		}
-
-		uid = nl[3][cbPendingList->SelectedIndex];
-
-		System::IO::Directory::CreateDirectory(folder);
-
-		bwBackgnd->WorkerReportsProgress = true;
-		bwBackgnd->WorkerSupportsCancellation = true;
-		tsProgress->Minimum = 0;
-		tsProgress->Maximum = 100;
-		bSelect->Text = "Cancel";
-		tsStatus->Text = "Downloading";
-		done = false;
-		bwBackgnd->RunWorkerAsync();
-	}
-	private: System::Void ChooseDSForm_Load(System::Object^  sender, System::EventArgs^  e) {
-		folder = "";
-		String ^msg;
-		nl = svc->getPendingDatasets2(teamId, msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			this->Close();
-			return;
-		}
-
-		for (int i = 0; i < nl[0]->Length; i++)
-		{
-			if (nl[1][i] == nullptr || nl[1][i]->Length == 0 || nl[1][i]->Equals("null"))
-				cbPendingList->Items->Add("** no description ** created on " + nl[2][i]);
-			else
-				cbPendingList->Items->Add(nl[1][i] + " created on " + nl[2][i]);
-		}
-	}
-	private: System::Void bwBackgnd_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
-		tsStatus->Text = "Ready";
-		bSelect->Text = "Select/Download";
-		tsProgress->Value = 0;
-
-		if (e->Cancelled)
-			MessageBox::Show("Download cancelled");
-		else
-		{
-			if (done == false)
-				MessageBox::Show("Download failed");
-			else
-			{
-				ScoreForm ^sf = gcnew ScoreForm(log, svc, folder);
-				this->Hide();
-				sf->ShowDialog();
-				this->Show();
-			}
-		}
-	}
-	private: System::Void bwBackgnd_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
-		BackgroundWorker ^worker = (BackgroundWorker ^)sender;
-
-		for (int i = 0; i < nl2[0]->Length; i++)
-		{
-			if (worker->CancellationPending == true)
-			{
-				e->Cancel = true;
-				return;
-			}
-			worker->ReportProgress((int) (0.5+100.0*i / nl2[0]->Length), "Downloading file " + i + " of " + nl2[0]->Length);
-			String ^url = _aws + "ds/" + nl2[2][i];
-			int retries = 2;
-			while (retries > 0)
-			{
-				try
-				{
-					String ^localfilename;
-					System::Net::WebClient w;
-
-					if (nl2[1][i]->Equals("txt"))
-						localfilename = folder + "\\dlmanifest.txt";
-					else
-						localfilename = folder + "\\" + nl2[2][i];
-
-					if (File::Exists(localfilename))
-						File::Delete(localfilename);
-
-					if (svc->isLocalClient())
-					{
-						LOGINFO("Local file: " + localfilename);
-						LOGINFO("Remote file: " + svc->getShareName() + Path::DirectorySeparatorChar + "ds" + Path::DirectorySeparatorChar + nl2[2][i]);
-						File::Copy(svc->getShareName() + Path::DirectorySeparatorChar + "ds" + Path::DirectorySeparatorChar + nl2[2][i], localfilename);
-					}
-					else
-					{
-						w.DownloadFile(url, localfilename);
-					}
-					break; // we are done
-				}
-				catch (Exception ^e)
-				{
-					LOGWARN("Exception while downloading file: " + e->Message);
-					retries--;
-					Thread::Sleep(2000);
-				}
-			}
-
-
-		}
-
-		StreamWriter ^sw = File::AppendText(folder + "\\dlmanifest.txt");
-		sw->WriteLine("userid:" + uid);
-		sw->Close();
-		done = true;
-	}
-	private: System::Void bwBackgnd_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e) {
-		String ^s = (String ^)e->UserState;
-		tsStatus->Text = s;
-		tsProgress->Value = e->ProgressPercentage;
-	}
 	};
 }

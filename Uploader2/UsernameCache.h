@@ -3,7 +3,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace Utilities
+namespace Uploader2
 {
 	ref class UsernameCache
 	{

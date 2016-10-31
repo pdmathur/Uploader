@@ -1,10 +1,12 @@
 #pragma once
+#include "../AnalyzerLibrary/AnalyzerLibrary.h"
+#include "Team.h"
 
 namespace Uploader2 {
 
 	using namespace System;
 	using namespace System::ComponentModel;
-	using namespace System::Collections;
+	using namespace System::Collections::Generic;
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
@@ -19,17 +21,13 @@ namespace Uploader2 {
 		Logger ^log;
 		Services ^svc;
 		Boolean userIsAdmin;
-		int selectedId = -1;
-		array<array<String ^> ^> ^nl;
+		System::Collections::Generic::List<Team^> teams;
 
-	private: System::Windows::Forms::TextBox^  tbCoachNickname;
-	private: System::Windows::Forms::Label^  label5;
-			 
+		private: System::Windows::Forms::TextBox^  tbCoachNickname;
+		private: System::Windows::Forms::Label^  label5;
 
 	public:
-
-		TeamForm(Logger ^_log, Services ^_svc, Boolean _admin)
-		{
+		TeamForm(Logger ^_log, Services ^_svc, Boolean _admin){
 			InitializeComponent();
 			this->log = _log;
 			this->userIsAdmin = _admin;
@@ -49,28 +47,18 @@ namespace Uploader2 {
 			}
 		}
 	private: System::Windows::Forms::ComboBox^  cbTeamList;
-	protected:
-
-	protected:
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::Button^  bSelectTeam;
 	private: System::Windows::Forms::Button^  bRenameTeam;
 	private: System::Windows::Forms::Button^  bDeleteTeam;
 	private: System::Windows::Forms::TextBox^  tbRenameName;
-
-
-
-
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Panel^  panel1;
 	private: System::Windows::Forms::Panel^  panel2;
 	private: System::Windows::Forms::TextBox^  tbCoachEmail;
-
 	private: System::Windows::Forms::Label^  label4;
 	private: System::Windows::Forms::TextBox^  tbNewName;
-
 	private: System::Windows::Forms::Button^  bCreateTeam;
-
 	private: System::Windows::Forms::Label^  label3;
 
 	private:
@@ -182,6 +170,7 @@ namespace Uploader2 {
 			// 
 			// panel2
 			// 
+			this->panel2->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
 			this->panel2->Controls->Add(this->tbCoachNickname);
 			this->panel2->Controls->Add(this->label5);
 			this->panel2->Controls->Add(this->tbCoachEmail);
@@ -275,160 +264,17 @@ namespace Uploader2 {
 
 		}
 #pragma endregion
-	private: System::Void TeamForm_Load(System::Object^  sender, System::EventArgs^  e) {
 
-		String ^msg;
-		nl = svc->listTeams(msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			DialogResult = Windows::Forms::DialogResult::Abort;
-			this->Close();
-		}
-		else
-		{
-			for (int i = 0; i < nl[1]->Length; i++)
-				cbTeamList->Items->Add(nl[1][i] + " ("+nl[2][i] + ")");
+	private:
+		System::Void TeamForm_Load(System::Object^  sender, System::EventArgs^  e);
+		System::Void bSelectTeam_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bRenameTeam_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bDeleteTeam_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bCreateTeam_Click(System::Object^  sender, System::EventArgs^  e);
 
-			// Select the last team
-			cbTeamList->SelectedIndex = cbTeamList->Items->Count - 1;
-		}
+		System::Boolean loadTeams();
 
-		if (userIsAdmin)
-		{
-			// Height = 330;
-		}
-		else
-		{
-			// Don't show unnecessary controls
-			this->Height = 224;
-
-			// Disable owner functions
-			bCreateTeam->Enabled = false;
-			tbCoachEmail->Enabled = false;
-			tbNewName->Enabled = false;
-			tbCoachNickname->Enabled = false;
-		}
-	}
-
-	private: System::Void bSelectTeam_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (cbTeamList->SelectedIndex < 0)
-			MessageBox::Show("Please select a team above");
-		else
-		{
-			DialogResult = Windows::Forms::DialogResult::OK;
-			selectedId = Int32::Parse(nl[0][cbTeamList->SelectedIndex]);
-			this->Close();
-		}
-	}
-
-	public: int getTeamId() {
-		return Int32::Parse(nl[0][cbTeamList->SelectedIndex]);
-	}
-
-	private: System::Void bRenameTeam_Click(System::Object^  sender, System::EventArgs^  e) {
-		String ^name = tbRenameName->Text->Trim();
-		if (name->Length > 0 && name->Length < 50 && cbTeamList->SelectedIndex != -1)
-		{
-			String ^msg;
-			String ^ename = System::Web::HttpUtility::UrlEncode(name);
-			svc->renameTeam(nl[0][cbTeamList->SelectedIndex], ename, msg);
-			if (msg->Length > 0)
-			{
-				MessageBox::Show(msg);
-			}
-			else
-			{
-				cbTeamList->Items[cbTeamList->SelectedIndex] = name; // update the UI
-				cbTeamList->Refresh();
-				MessageBox::Show("Team renamed!");
-			}
-
-		}
-	}
-	private: System::Void bDeleteTeam_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (cbTeamList->SelectedIndex != -1)
-		{
-			System::Windows::Forms::DialogResult dialogResult = MessageBox::Show("Are you sure you want to delete this team?  All team's data will be deleted!",
-				"Please consider carefully and confirm", MessageBoxButtons::YesNo);
-			if (dialogResult == System::Windows::Forms::DialogResult::No)
-				return;
-
-			String ^msg;
-			svc->deleteTeam(nl[0][cbTeamList->SelectedIndex], msg);
-			if (msg->Length > 0)
-			{
-				MessageBox::Show(msg);
-			}
-			else
-			{
-				cbTeamList->Items->Remove(cbTeamList->SelectedItem);
-				cbTeamList->Refresh();
-				MessageBox::Show("Team deleted");
-			}
-
-		}
-	}
-	private: System::Void bCreateTeam_Click(System::Object^  sender, System::EventArgs^  e) {
-		String ^teamname = tbNewName->Text->Trim();
-		String ^coachemail = tbCoachEmail->Text->Trim();
-		String ^coachNN = tbCoachNickname->Text->Trim();
-
-		String ^eteamname = System::Web::HttpUtility::UrlEncode(teamname);
-		String ^ecoachemail = System::Web::HttpUtility::UrlEncode(coachemail);
-		String ^ecoachNN = System::Web::HttpUtility::UrlEncode(coachNN);
-
-		if (teamname->Length == 0 || teamname->Length > 50 || coachemail->Length == 0 || coachemail->Length > 100 || coachNN->Length == 0 || coachNN->Length > 50)
-		{
-			MessageBox::Show("Please enter a team name (50 chars), email (100 chars), and coach's nickname (50 chars)");
-			return;
-		}
-
-		String ^msg;
-		array<array<String ^> ^> ^nl2 = svc->createTeam(eteamname, msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-		}
-		else
-		{
-			// Refresh the list
-			cbTeamList->Items->Clear();
-
-			nl = svc->listTeams(msg);
-			if (msg->Length > 0)
-			{
-				MessageBox::Show(msg);
-				DialogResult = Windows::Forms::DialogResult::Abort;
-				this->Close();
-			}
-			else
-			{
-				int idx = -1;
-				for (int i = 0; i < nl[1]->Length; i++)
-				{
-					cbTeamList->Items->Add(nl[1][i] + " (" + nl[2][i] + ")");
-					if (nl[0][i]->Equals(nl2[0][0]))
-						idx = i;
-				}
-
-				// Select the last team
-				cbTeamList->SelectedIndex = idx;
-
-				// Send invitation to coach
-				svc->inviteCoach(nl2[0][0], ecoachNN, ecoachemail, msg);
-				if (msg->Length > 0)
-				{
-					MessageBox::Show(msg);
-				}
-				else
-				{
-					MessageBox::Show("Team Created and coach invited at email address indicated!");
-				}
-
-			}
-			cbTeamList->Refresh();
-		}
-	}
+	public:
+		Team^ selectedTeam();
 };
 }

@@ -2,43 +2,41 @@
 
 using namespace System::IO;
 
-namespace Utilities
+Uploader2::UsernameCache::UsernameCache()
+	: _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\form-data.txt")
 {
-	UsernameCache::UsernameCache()
-		: _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\form-data.txt")
-	{
-	}
-	void UsernameCache::update(String^ user)
-	{
-		_users.Add(user);
-		try
-		{
-			FileStream^ out = File::OpenWrite(_path);
-			StreamWriter writer(out);
-			for each (String^ user in _users) {
-				writer.WriteLine(user);
-			}
-		}
-		catch (Exception^ e)
-		{
-		}
-	}
+}
 
-	bool UsernameCache::load()
+void Uploader2::UsernameCache::update(String^ user)
+{
+	_users.Add(user);
+	try
 	{
-		try
-		{
-			StreamReader^ in = File::OpenText(_path);
-			String^ line;
-			while ((line = in->ReadLine()) != nullptr)
-			{
-				_users.Add(line);
-			}
-			in->Close();
+		FileStream^ out = File::OpenWrite(_path);
+		StreamWriter writer(out);
+		for each (String^ user in _users) {
+			writer.WriteLine(user);
 		}
-		catch (Exception^ e)
-		{
-		}
-		return true;
 	}
+	catch (Exception^ e)
+	{
+	}
+}
+
+bool Uploader2::UsernameCache::load()
+{
+	try
+	{
+		StreamReader^ in = File::OpenText(_path);
+		String^ line;
+		while ((line = in->ReadLine()) != nullptr)
+		{
+			_users.Add(line);
+		}
+		in->Close();
+	}
+	catch (Exception^ e)
+	{
+	}
+	return true;
 }

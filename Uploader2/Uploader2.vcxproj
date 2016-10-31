@@ -86,9 +86,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChooseDSForm.cpp" />
+    <ClCompile Include="ImportForm.cpp" />
     <ClCompile Include="LauncherForm.cpp" />
+    <ClCompile Include="LoginForm.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="ScoreForm.cpp" />
     <ClCompile Include="Stdafx.cpp" />
+    <ClCompile Include="Team.cpp" />
+    <ClCompile Include="TeamForm.cpp" />
     <ClCompile Include="UsernameCache.cpp" />
+    <ClCompile Include="Venue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Banner.h">
@@ -106,10 +114,12 @@
     <ClInclude Include="LoginForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ScoreForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Team.h" />
     <ClInclude Include="TeamForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -117,6 +127,7 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="UsernameCache.h" />
+    <ClInclude Include="Venue.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Banner.resx">

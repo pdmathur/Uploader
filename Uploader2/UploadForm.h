@@ -6,6 +6,7 @@
 
 namespace Uploader2 {
 	using namespace System;
+	using namespace System::IO;
 	using namespace System::ComponentModel;
 	using namespace System::Collections;
 	using namespace System::Windows::Forms;

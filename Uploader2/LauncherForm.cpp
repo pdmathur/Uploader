@@ -89,3 +89,30 @@ void Main(array<String^>^ args)
 	Uploader2::LoginForm form(log, svc, user, pwd);
 	Application::Run(%form);
 }
+
+System::Void Uploader2::LauncherForm::LauncherForm_Load(System::Object^  sender, System::EventArgs^  e) {
+	this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
+	this->tbTeamName->Text = this->team->name();
+	this->tbCoach->Text = this->team->coach();
+	this->tbAnalyzer->Text = this->email;
+	workfolder = "";
+}
+System::Void Uploader2::LauncherForm::button1_Click(System::Object^  sender, System::EventArgs^  e) {
+	ImportForm ^importForm = gcnew ImportForm(log, svc, this->team);
+	this->Hide();
+	importForm->ShowDialog();
+	this->Show();
+}
+System::Void Uploader2::LauncherForm::button2_Click(System::Object^  sender, System::EventArgs^  e) {
+	ScoreForm ^sf = gcnew ScoreForm(log, svc, workfolder);
+	this->Hide();
+	sf->ShowDialog();
+	this->Show();
+}
+System::Void Uploader2::LauncherForm::button1_Click_1(System::Object^  sender, System::EventArgs^  e) {
+	ChooseDSForm ^cds = gcnew ChooseDSForm(log, svc, this->team);
+	this->Hide();
+	cds->ShowDialog();
+	this->Show();
+	workfolder = cds->getFolder();
+}
