@@ -1,5 +1,6 @@
 #pragma once
 #include "../AnalyzerLibrary/AnalyzerLibrary.h"
+#include "AppPrefs.h"
 #include "Player.h"
 #include "TeamForm.h"
 #include "ImportForm.h"
@@ -21,12 +22,11 @@ namespace Uploader2 {
 	public ref class LoginForm : public System::Windows::Forms::Form
 	{
 	public:
-		LoginForm(Logger ^_log, Services ^_svc, String ^_user, String ^_pwd)
+		LoginForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs)
 		{
 			InitializeComponent();
 			log = _log;
-			this->user = _user;
-			this->pwd = _pwd;
+			this->prefs = prefs;
 			this->svc = _svc;
 			log->Log(Logger::LogLevel::INFO, "Constructing Login Box");
 		}
@@ -136,8 +136,7 @@ namespace Uploader2 {
 
 		Logger ^log;
 		Services ^svc;
-		String ^user;
-		String ^pwd;
+		AppPrefs ^prefs;
 
 		UsernameCache cache;
 

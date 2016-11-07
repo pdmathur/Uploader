@@ -23,13 +23,14 @@ namespace Uploader2 {
 	public ref class LauncherForm : public System::Windows::Forms::Form
 	{
 	public:
-		LauncherForm(Logger ^_log, Services ^_svc, String^ email, Team^ _team)
+		LauncherForm(Logger^ log, Services^ svc, AppPrefs^ prefs, String^ email, Team^ team)
 		{
 			InitializeComponent();
-			this->log = _log;
-			this->team = _team;
+			this->log = log;
+			this->team = team;
 			this->email = email;
-			this->svc = _svc;
+			this->svc = svc;
+			this->prefs = prefs;
 			LOGINFO("Created Launcher Form");
 		}
 
@@ -50,9 +51,15 @@ namespace Uploader2 {
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Label^  label3;
-	private: System::Windows::Forms::TextBox^  tbTeamName;
-	private: System::Windows::Forms::TextBox^  tbCoach;
-	private: System::Windows::Forms::TextBox^  tbAnalyzer;
+	private: System::Windows::Forms::Label^  lbTeamName;
+	private: System::Windows::Forms::Label^  lbAnalyzer;
+
+	private: System::Windows::Forms::Label^  lbCoach;
+	private: System::Windows::Forms::Button^  bnProperties;
+
+
+
+
 	private:
 		/// <summary>
 		/// Required designer variable.
@@ -72,16 +79,17 @@ namespace Uploader2 {
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->label3 = (gcnew System::Windows::Forms::Label());
-			this->tbTeamName = (gcnew System::Windows::Forms::TextBox());
-			this->tbCoach = (gcnew System::Windows::Forms::TextBox());
-			this->tbAnalyzer = (gcnew System::Windows::Forms::TextBox());
+			this->lbTeamName = (gcnew System::Windows::Forms::Label());
+			this->lbAnalyzer = (gcnew System::Windows::Forms::Label());
+			this->lbCoach = (gcnew System::Windows::Forms::Label());
+			this->bnProperties = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// bImport
 			// 
 			this->bImport->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bImport->Location = System::Drawing::Point(45, 116);
+			this->bImport->Location = System::Drawing::Point(45, 87);
 			this->bImport->Name = L"bImport";
 			this->bImport->Size = System::Drawing::Size(295, 47);
 			this->bImport->TabIndex = 0;
@@ -106,7 +114,7 @@ namespace Uploader2 {
 			// 
 			this->button1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button1->Location = System::Drawing::Point(45, 167);
+			this->button1->Location = System::Drawing::Point(45, 149);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(295, 47);
 			this->button1->TabIndex = 1;
@@ -117,7 +125,7 @@ namespace Uploader2 {
 			// label1
 			// 
 			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(54, 29);
+			this->label1->Location = System::Drawing::Point(42, 9);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(37, 13);
 			this->label1->TabIndex = 4;
@@ -126,7 +134,7 @@ namespace Uploader2 {
 			// label2
 			// 
 			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(41, 53);
+			this->label2->Location = System::Drawing::Point(29, 33);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(50, 13);
 			this->label2->TabIndex = 5;
@@ -135,44 +143,58 @@ namespace Uploader2 {
 			// label3
 			// 
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(50, 79);
+			this->label3->Location = System::Drawing::Point(38, 59);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(41, 13);
 			this->label3->TabIndex = 6;
 			this->label3->Text = L"Coach:";
 			// 
-			// tbTeamName
+			// lbTeamName
 			// 
-			this->tbTeamName->Location = System::Drawing::Point(95, 22);
-			this->tbTeamName->Name = L"tbTeamName";
-			this->tbTeamName->ReadOnly = true;
-			this->tbTeamName->Size = System::Drawing::Size(245, 20);
-			this->tbTeamName->TabIndex = 7;
+			this->lbTeamName->AutoSize = true;
+			this->lbTeamName->Location = System::Drawing::Point(85, 9);
+			this->lbTeamName->Name = L"lbTeamName";
+			this->lbTeamName->Size = System::Drawing::Size(61, 13);
+			this->lbTeamName->TabIndex = 7;
+			this->lbTeamName->Text = L"unavailable";
 			// 
-			// tbCoach
+			// lbAnalyzer
 			// 
-			this->tbCoach->Location = System::Drawing::Point(95, 78);
-			this->tbCoach->Name = L"tbCoach";
-			this->tbCoach->ReadOnly = true;
-			this->tbCoach->Size = System::Drawing::Size(245, 20);
-			this->tbCoach->TabIndex = 8;
+			this->lbAnalyzer->AutoSize = true;
+			this->lbAnalyzer->Location = System::Drawing::Point(85, 33);
+			this->lbAnalyzer->Name = L"lbAnalyzer";
+			this->lbAnalyzer->Size = System::Drawing::Size(61, 13);
+			this->lbAnalyzer->TabIndex = 8;
+			this->lbAnalyzer->Text = L"unavailable";
 			// 
-			// tbAnalyzer
+			// lbCoach
 			// 
-			this->tbAnalyzer->Location = System::Drawing::Point(95, 50);
-			this->tbAnalyzer->Name = L"tbAnalyzer";
-			this->tbAnalyzer->ReadOnly = true;
-			this->tbAnalyzer->Size = System::Drawing::Size(245, 20);
-			this->tbAnalyzer->TabIndex = 9;
+			this->lbCoach->AutoSize = true;
+			this->lbCoach->Location = System::Drawing::Point(85, 59);
+			this->lbCoach->Name = L"lbCoach";
+			this->lbCoach->Size = System::Drawing::Size(61, 13);
+			this->lbCoach->TabIndex = 9;
+			this->lbCoach->Text = L"unavailable";
+			// 
+			// bnProperties
+			// 
+			this->bnProperties->Location = System::Drawing::Point(298, 9);
+			this->bnProperties->Name = L"bnProperties";
+			this->bnProperties->Size = System::Drawing::Size(84, 27);
+			this->bnProperties->TabIndex = 24;
+			this->bnProperties->Text = L"Properties...";
+			this->bnProperties->UseVisualStyleBackColor = true;
+			this->bnProperties->Click += gcnew System::EventHandler(this, &LauncherForm::bnProperties_Click);
 			// 
 			// LauncherForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(394, 232);
-			this->Controls->Add(this->tbAnalyzer);
-			this->Controls->Add(this->tbCoach);
-			this->Controls->Add(this->tbTeamName);
+			this->ClientSize = System::Drawing::Size(394, 220);
+			this->Controls->Add(this->bnProperties);
+			this->Controls->Add(this->lbCoach);
+			this->Controls->Add(this->lbAnalyzer);
+			this->Controls->Add(this->lbTeamName);
 			this->Controls->Add(this->label3);
 			this->Controls->Add(this->label2);
 			this->Controls->Add(this->label1);
@@ -193,6 +215,7 @@ namespace Uploader2 {
 			System::Void button1_Click(System::Object^  sender, System::EventArgs^  e);
 			System::Void button2_Click(System::Object^  sender, System::EventArgs^  e);
 			System::Void button1_Click_1(System::Object^  sender, System::EventArgs^  e);
+			System::Void bnProperties_Click(System::Object^  sender, System::EventArgs^  e);
 
 		private:
 			Logger^ log;
@@ -200,5 +223,8 @@ namespace Uploader2 {
 			String^ workfolder;
 			Team^ team;
 			String^ email;
-	};
+			AppPrefs^ prefs;
+	private: 
+
+};
 }

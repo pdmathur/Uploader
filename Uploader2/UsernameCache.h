@@ -1,10 +1,10 @@
 #pragma once
 
-using namespace System;
-using namespace System::Collections::Generic;
-
 namespace Uploader2
 {
+	using namespace System;
+	using namespace System::Collections::Generic;
+
 	ref class UsernameCache
 	{
 	public:

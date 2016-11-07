@@ -1,5 +1,6 @@
 #pragma once
 #include "Team.h"
+#include "AppPrefs.h"
 
 namespace Uploader2 {
 
@@ -18,11 +19,12 @@ namespace Uploader2 {
 	public ref class ChooseDSForm : public System::Windows::Forms::Form
 	{
 	public:
-		ChooseDSForm(Logger ^_log, Services ^_svc, Team^ team)
+		ChooseDSForm(Logger ^log, Services ^svc, AppPrefs^ prefs, Team^ team)
 		{
 			InitializeComponent();
-			this->log = _log;
-			this->svc = _svc;
+			this->log = log;
+			this->svc = svc;
+			this->prefs = prefs;
 			this->team = team;
 		}
 
@@ -164,13 +166,14 @@ namespace Uploader2 {
 		System::Void bwBackgnd_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
 		System::Void bwBackgnd_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
 	private:
-		Services ^svc;
+		Services^ svc;
+		AppPrefs^ prefs;
 		array<array<String ^>^> ^nl;
 		array<array<String ^>^> ^nl2;
-		String ^folder;
-		Logger ^log;
-		String ^uid;
-		Team ^team;
+		String^ folder;
+		Logger^ log;
+		String^ uid;
+		Team^ team;
 		Boolean done;
 	};
 }

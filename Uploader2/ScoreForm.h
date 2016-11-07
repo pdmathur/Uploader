@@ -1,5 +1,6 @@
 #pragma once
 #include "../AnalyzerLibrary/AnalyzerLibrary.h"
+#include "AppPrefs.h"
 
 // Modes for the UI
 #define MODE_INIT -1
@@ -31,11 +32,12 @@ namespace Uploader2 {
 	public ref class ScoreForm : public System::Windows::Forms::Form
 	{
 	public:
-		ScoreForm(Logger ^_log, Services ^_svc, String ^_folder)
+		ScoreForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, String ^_folder)
 		{
 			InitializeComponent();
 			this->log = _log;
 			this->svc = _svc;
+			this->prefs = prefs;
 			this->folder = _folder;
 			LOGINFO("Scoreform Loaded");
 		}
@@ -476,23 +478,6 @@ namespace Uploader2 {
 		}
 #pragma endregion
 
-	public:
-		Logger ^log;
-		Services ^svc;
-		String ^folder;
-		String ^rootFolder;
-		String ^viewType;
-
-		Analyzer ^a;
-		ImageList ^imlist;
-		Boolean windowSet;
-
-		Point mousePt; // location on the image where the user clicked on the target
-
-		int selIndex; // index of selected shot
-		int manualIdx; // index of frame within shot
-		int mode;
-
 	private: void makeControlsInvisible()
 	{
 		bResetPost->Visible = false;
@@ -564,6 +549,24 @@ namespace Uploader2 {
 	private: System::Void bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
 	private: System::Void bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
 	private: System::Void nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e);
+
+	public:
+		Logger^ log;
+		Services^ svc;
+		AppPrefs^ prefs;
+		String^ folder;
+		String^ rootFolder;
+		String^ viewType;
+
+		Analyzer ^a;
+		ImageList ^imlist;
+		Boolean windowSet;
+
+		Point mousePt; // location on the image where the user clicked on the target
+
+		int selIndex; // index of selected shot
+		int manualIdx; // index of frame within shot
+		int mode;
 };
 }
 

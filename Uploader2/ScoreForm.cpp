@@ -48,6 +48,12 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		imlist->ColorDepth = ColorDepth::Depth24Bit;
 		imlist->ImageSize = Drawing::Size(200, 150);
 
+		a->setBlurRadius(prefs->_blurRadius);
+		a->setTargetSearchWindowWidth(prefs->_targetSearchWindow, prefs->_initialTargetSearchWindow);
+		a->setMinSpanPoints(prefs->_minumumSpanPoints);
+		//a->setAimPoint();
+		//a->setAimRadius();
+
 		if (!a->isSavedDataDirty()) // we should process this roll, the anlyzer has not been used on it
 		{
 			mode = MODE_INIT;

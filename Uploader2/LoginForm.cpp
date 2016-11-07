@@ -25,7 +25,7 @@ System::Void Uploader2::LoginForm::login() {
 			tf->ShowDialog();
 			if (tf->DialogResult == Windows::Forms::DialogResult::OK)
 			{
-				LauncherForm ^lf = gcnew LauncherForm(log, svc, tbUser->Text, tf->selectedTeam());
+				LauncherForm ^lf = gcnew LauncherForm(log, svc, this->prefs, tbUser->Text, tf->selectedTeam());
 				lf->ShowDialog();
 			}
 			this->Close();
@@ -39,7 +39,7 @@ System::Void Uploader2::LoginForm::login() {
 			tf->ShowDialog();
 			if (tf->DialogResult == Windows::Forms::DialogResult::OK)
 			{
-				ImportForm ^imf = gcnew ImportForm(log, svc, tf->selectedTeam());
+				ImportForm ^imf = gcnew ImportForm(log, svc, this->prefs, tf->selectedTeam());
 				imf->ShowDialog();
 			}
 			this->Close();
@@ -75,14 +75,22 @@ System::Void Uploader2::LoginForm::bSignIn_Click(System::Object^  sender, System
 
 System::Void Uploader2::LoginForm::LoginForm_Load(System::Object^  sender, System::EventArgs^  e) {
 	this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
-	tbUser->Text = user;
-	tbPwd->Text = pwd;
+
+	tbUser->Text = prefs->_user;
+	tbPwd->Text = prefs->_password;
 
 	cache.load();
 	for each (String^ user in cache._users)
 		this->tbUser->AutoCompleteCustomSource->Add(user);
 
+	if (!tbPwd->Text->Empty)
+		this->bSignIn->Focus();
+	else if (!tbUser->Text->Empty)
+		this->tbPwd->Focus();
+	else
+		this->tbUser->Focus();
 }
+
 System::Void Uploader2::LoginForm::tbPwd_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {
 	if (e->KeyChar == (wchar_t)Keys::Return)
 		login();

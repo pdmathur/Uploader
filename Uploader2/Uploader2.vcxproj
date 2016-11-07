@@ -86,11 +86,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppPrefs.cpp" />
     <ClCompile Include="ChooseDSForm.cpp" />
+    <ClCompile Include="Field.cpp" />
     <ClCompile Include="ImportForm.cpp" />
     <ClCompile Include="LauncherForm.cpp" />
     <ClCompile Include="LoginForm.cpp" />
+    <ClCompile Include="NewFieldForm.cpp" />
+    <ClCompile Include="NewVenueForm.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PropertiesForm.cpp" />
     <ClCompile Include="ScoreForm.cpp" />
     <ClCompile Include="Stdafx.cpp" />
     <ClCompile Include="Team.cpp" />
@@ -99,12 +104,14 @@
     <ClCompile Include="Venue.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppPrefs.h" />
     <ClInclude Include="Banner.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="ChooseDSForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Field.h" />
     <ClInclude Include="LauncherForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -114,7 +121,16 @@
     <ClInclude Include="LoginForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="NewFieldForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="NewVenueForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Player.h" />
+    <ClInclude Include="PropertiesForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="ScoreForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -145,6 +161,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="LoginForm.resx">
       <DependentUpon>LoginForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewFieldForm.resx">
+      <DependentUpon>NewFieldForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewVenueForm.resx">
+      <DependentUpon>NewVenueForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PropertiesForm.resx">
+      <DependentUpon>PropertiesForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ScoreForm.resx">
       <DependentUpon>ScoreForm.h</DependentUpon>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AppPrefs.h"
+#include "Field.h"
 #include "Player.h"
 #include "Team.h"
 #include "Venue.h"
@@ -25,12 +27,13 @@ namespace Uploader2 {
 	public ref class ImportForm : public System::Windows::Forms::Form
 	{
 	public:
-		ImportForm(Logger ^_log, Services ^_svc, Team^ _team)
+		ImportForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, Team^ _team)
 		{
 			InitializeComponent();
 			this->log = _log;
 			this->team = _team;
 			this->svc = _svc;
+			this->prefs = prefs;
 			LOGINFO("Created Import Form");
 		}
 
@@ -70,8 +73,11 @@ namespace Uploader2 {
 	private: System::Windows::Forms::Label^  label7;
 	private: System::Windows::Forms::TrackBar^  trackBar1;
 	private: System::Windows::Forms::Button^  btNewVenue;
-	private: System::Windows::Forms::Button^  btNewFieldd;
+	private: System::Windows::Forms::Button^  btNewField;
+
 	private: System::Windows::Forms::Label^  lbStationValue;
+	private: System::Windows::Forms::Label^  label8;
+
 
 	private: System::ComponentModel::IContainer^  components;
 
@@ -114,8 +120,9 @@ namespace Uploader2 {
 			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
 			this->btNewVenue = (gcnew System::Windows::Forms::Button());
-			this->btNewFieldd = (gcnew System::Windows::Forms::Button());
+			this->btNewField = (gcnew System::Windows::Forms::Button());
 			this->lbStationValue = (gcnew System::Windows::Forms::Label());
+			this->label8 = (gcnew System::Windows::Forms::Label());
 			this->statusStrip1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->BeginInit();
 			this->SuspendLayout();
@@ -157,27 +164,27 @@ namespace Uploader2 {
 			// 
 			this->bImport->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bImport->Location = System::Drawing::Point(202, 440);
+			this->bImport->Location = System::Drawing::Point(199, 407);
 			this->bImport->Name = L"bImport";
 			this->bImport->Size = System::Drawing::Size(86, 33);
-			this->bImport->TabIndex = 2;
+			this->bImport->TabIndex = 7;
 			this->bImport->Text = L"Import";
 			this->bImport->UseVisualStyleBackColor = true;
 			this->bImport->Click += gcnew System::EventHandler(this, &ImportForm::bImport_Click);
 			// 
 			// tbDesc
 			// 
-			this->tbDesc->Location = System::Drawing::Point(16, 303);
+			this->tbDesc->Location = System::Drawing::Point(16, 236);
 			this->tbDesc->Name = L"tbDesc";
 			this->tbDesc->Size = System::Drawing::Size(454, 20);
-			this->tbDesc->TabIndex = 3;
+			this->tbDesc->TabIndex = 2;
 			// 
 			// label2
 			// 
 			this->label2->AutoSize = true;
 			this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label2->Location = System::Drawing::Point(12, 280);
+			this->label2->Location = System::Drawing::Point(12, 213);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(252, 20);
 			this->label2->TabIndex = 4;
@@ -192,7 +199,7 @@ namespace Uploader2 {
 			this->label3->AutoSize = true;
 			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label3->Location = System::Drawing::Point(12, 216);
+			this->label3->Location = System::Drawing::Point(16, 525);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(167, 20);
 			this->label3->TabIndex = 6;
@@ -201,15 +208,15 @@ namespace Uploader2 {
 			// cbPlayer
 			// 
 			this->cbPlayer->FormattingEnabled = true;
-			this->cbPlayer->Location = System::Drawing::Point(16, 239);
+			this->cbPlayer->Location = System::Drawing::Point(70, 280);
 			this->cbPlayer->Name = L"cbPlayer";
-			this->cbPlayer->Size = System::Drawing::Size(458, 21);
-			this->cbPlayer->TabIndex = 7;
+			this->cbPlayer->Size = System::Drawing::Size(398, 21);
+			this->cbPlayer->TabIndex = 3;
 			// 
 			// statusStrip1
 			// 
 			this->statusStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->sslStat, this->toolStripProgressBar1 });
-			this->statusStrip1->Location = System::Drawing::Point(0, 491);
+			this->statusStrip1->Location = System::Drawing::Point(0, 456);
 			this->statusStrip1->Name = L"statusStrip1";
 			this->statusStrip1->Size = System::Drawing::Size(497, 22);
 			this->statusStrip1->TabIndex = 8;
@@ -235,19 +242,19 @@ namespace Uploader2 {
 			// cbLimit
 			// 
 			this->cbLimit->AutoSize = true;
-			this->cbLimit->Location = System::Drawing::Point(335, 450);
+			this->cbLimit->Location = System::Drawing::Point(332, 369);
 			this->cbLimit->Name = L"cbLimit";
 			this->cbLimit->Size = System::Drawing::Size(87, 17);
-			this->cbLimit->TabIndex = 9;
+			this->cbLimit->TabIndex = 8;
 			this->cbLimit->Text = L"Limit uploads";
 			this->cbLimit->UseVisualStyleBackColor = true;
 			// 
 			// tbLimit
 			// 
-			this->tbLimit->Location = System::Drawing::Point(429, 450);
+			this->tbLimit->Location = System::Drawing::Point(426, 369);
 			this->tbLimit->Name = L"tbLimit";
 			this->tbLimit->Size = System::Drawing::Size(39, 20);
-			this->tbLimit->TabIndex = 10;
+			this->tbLimit->TabIndex = 9;
 			this->tbLimit->Text = L"7";
 			// 
 			// lbTeamName
@@ -255,34 +262,34 @@ namespace Uploader2 {
 			this->lbTeamName->AutoSize = true;
 			this->lbTeamName->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->lbTeamName->Location = System::Drawing::Point(110, 7);
+			this->lbTeamName->Location = System::Drawing::Point(104, 7);
 			this->lbTeamName->Name = L"lbTeamName";
-			this->lbTeamName->Size = System::Drawing::Size(29, 20);
+			this->lbTeamName->Size = System::Drawing::Size(19, 20);
 			this->lbTeamName->TabIndex = 11;
-			this->lbTeamName->Text = L"nn";
+			this->lbTeamName->Text = L"n";
 			// 
 			// label4
 			// 
 			this->label4->AutoSize = true;
 			this->label4->Location = System::Drawing::Point(13, 12);
 			this->label4->Name = L"label4";
-			this->label4->Size = System::Drawing::Size(96, 13);
+			this->label4->Size = System::Drawing::Size(93, 13);
 			this->label4->TabIndex = 12;
-			this->label4->Text = L"Uploading to team:";
+			this->label4->Text = L"Uploading to team";
 			// 
 			// cbVenue
 			// 
 			this->cbVenue->FormattingEnabled = true;
-			this->cbVenue->Location = System::Drawing::Point(70, 333);
+			this->cbVenue->Location = System::Drawing::Point(70, 306);
 			this->cbVenue->Name = L"cbVenue";
 			this->cbVenue->Size = System::Drawing::Size(308, 21);
-			this->cbVenue->TabIndex = 14;
+			this->cbVenue->TabIndex = 4;
 			this->cbVenue->SelectedIndexChanged += gcnew System::EventHandler(this, &ImportForm::cbVenue_SelectedIndexChanged);
 			// 
 			// label5
 			// 
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(25, 336);
+			this->label5->Location = System::Drawing::Point(23, 309);
 			this->label5->Name = L"label5";
 			this->label5->Size = System::Drawing::Size(38, 13);
 			this->label5->TabIndex = 13;
@@ -291,15 +298,15 @@ namespace Uploader2 {
 			// cbField
 			// 
 			this->cbField->FormattingEnabled = true;
-			this->cbField->Location = System::Drawing::Point(70, 361);
+			this->cbField->Location = System::Drawing::Point(70, 334);
 			this->cbField->Name = L"cbField";
 			this->cbField->Size = System::Drawing::Size(308, 21);
-			this->cbField->TabIndex = 16;
+			this->cbField->TabIndex = 5;
 			// 
 			// label6
 			// 
 			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(34, 365);
+			this->label6->Location = System::Drawing::Point(32, 338);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(29, 13);
 			this->label6->TabIndex = 15;
@@ -308,7 +315,7 @@ namespace Uploader2 {
 			// label7
 			// 
 			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(23, 399);
+			this->label7->Location = System::Drawing::Point(23, 372);
 			this->label7->Name = L"label7";
 			this->label7->Size = System::Drawing::Size(40, 13);
 			this->label7->TabIndex = 17;
@@ -317,58 +324,67 @@ namespace Uploader2 {
 			// trackBar1
 			// 
 			this->trackBar1->LargeChange = 1;
-			this->trackBar1->Location = System::Drawing::Point(90, 387);
+			this->trackBar1->Location = System::Drawing::Point(90, 356);
 			this->trackBar1->Maximum = 5;
 			this->trackBar1->Minimum = 1;
 			this->trackBar1->Name = L"trackBar1";
 			this->trackBar1->Size = System::Drawing::Size(115, 45);
-			this->trackBar1->TabIndex = 18;
+			this->trackBar1->TabIndex = 6;
 			this->trackBar1->TickStyle = System::Windows::Forms::TickStyle::Both;
 			this->trackBar1->Value = 1;
 			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &ImportForm::trackBar1_ValueChanged);
 			// 
 			// btNewVenue
 			// 
-			this->btNewVenue->Location = System::Drawing::Point(384, 332);
+			this->btNewVenue->Location = System::Drawing::Point(384, 305);
 			this->btNewVenue->Name = L"btNewVenue";
 			this->btNewVenue->Size = System::Drawing::Size(84, 25);
 			this->btNewVenue->TabIndex = 19;
 			this->btNewVenue->Text = L"New Venue...";
 			this->btNewVenue->UseVisualStyleBackColor = true;
-			this->btNewVenue->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ImportForm::btNewVenue_MouseClick);
+			this->btNewVenue->Click += gcnew System::EventHandler(this, &ImportForm::btNewVenue_Click);
 			// 
-			// btNewFieldd
+			// btNewField
 			// 
-			this->btNewFieldd->Location = System::Drawing::Point(384, 359);
-			this->btNewFieldd->Name = L"btNewFieldd";
-			this->btNewFieldd->Size = System::Drawing::Size(84, 25);
-			this->btNewFieldd->TabIndex = 20;
-			this->btNewFieldd->Text = L"New Field...";
-			this->btNewFieldd->UseVisualStyleBackColor = true;
-			this->btNewFieldd->Click += gcnew System::EventHandler(this, &ImportForm::btNewFieldd_Click);
+			this->btNewField->Location = System::Drawing::Point(384, 332);
+			this->btNewField->Name = L"btNewField";
+			this->btNewField->Size = System::Drawing::Size(84, 25);
+			this->btNewField->TabIndex = 20;
+			this->btNewField->Text = L"New Field...";
+			this->btNewField->UseVisualStyleBackColor = true;
+			this->btNewField->Click += gcnew System::EventHandler(this, &ImportForm::btNewField_Click);
 			// 
 			// lbStationValue
 			// 
 			this->lbStationValue->AutoSize = true;
-			this->lbStationValue->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
 			this->lbStationValue->FlatStyle = System::Windows::Forms::FlatStyle::System;
-			this->lbStationValue->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+			this->lbStationValue->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->lbStationValue->Location = System::Drawing::Point(70, 399);
+			this->lbStationValue->Location = System::Drawing::Point(70, 369);
 			this->lbStationValue->Name = L"lbStationValue";
-			this->lbStationValue->Size = System::Drawing::Size(17, 18);
+			this->lbStationValue->Size = System::Drawing::Size(16, 18);
 			this->lbStationValue->TabIndex = 21;
 			this->lbStationValue->Text = L"1";
 			this->lbStationValue->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			// 
+			// label8
+			// 
+			this->label8->AutoSize = true;
+			this->label8->Location = System::Drawing::Point(17, 283);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(44, 13);
+			this->label8->TabIndex = 22;
+			this->label8->Text = L"Shooter";
 			// 
 			// ImportForm
 			// 
 			this->AllowDrop = true;
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(497, 513);
+			this->ClientSize = System::Drawing::Size(497, 478);
+			this->Controls->Add(this->label8);
 			this->Controls->Add(this->lbStationValue);
-			this->Controls->Add(this->btNewFieldd);
+			this->Controls->Add(this->btNewField);
 			this->Controls->Add(this->btNewVenue);
 			this->Controls->Add(this->trackBar1);
 			this->Controls->Add(this->label7);
@@ -416,23 +432,28 @@ namespace Uploader2 {
 		System::Void lvFiles_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e);
 		System::Void cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e);
 		System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e);
-		System::Void btNewVenue_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-		System::Void btNewFieldd_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void btNewField_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void btNewVenue_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bnProperties_Click(System::Object^  sender, System::EventArgs^  e);
 
 		bool loadUsers();
-		bool loadVenues();
+		bool loadVenues(String^ target);
+		void loadFields(String^ target);
 
 	private:
 		System::Collections::Generic::List<Player^> users;
 		System::Collections::Generic::List<Venue^> venues;
+		System::Collections::Generic::List<Field^> fields;
+
 		Logger ^log;
 		Services ^svc;
 		Team^ team;
+		AppPrefs^ prefs;
 
 		String ^folder;
 		array<String ^> ^lvi;
 		int selIndex;
 		Boolean done;
 		int uploadCountLimit;
-};
+	};
 }

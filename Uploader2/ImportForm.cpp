@@ -1,5 +1,8 @@
 #include "ImportForm.h"
 #include "LauncherForm.h"
+#include "NewVenueForm.h"
+#include "NewFieldForm.h"
+#include "PropertiesForm.h"
 
 bool Uploader2::ImportForm::loadUsers()
 {
@@ -11,6 +14,8 @@ bool Uploader2::ImportForm::loadUsers()
 		return false;
 	}
 
+	cbPlayer->Items->Clear();
+	this->users.Clear();
 	for (int i = 0; i < list[1]->Length; i++)
 	{
 		Player^ user = gcnew Player(list[0][i], list[1][i], list[2][i]);
@@ -25,7 +30,7 @@ bool Uploader2::ImportForm::loadUsers()
 	return true;
 }
 
-bool Uploader2::ImportForm::loadVenues()
+bool Uploader2::ImportForm::loadVenues(String^ targetId)
 {
 	String^ msg;
 	array<array<String ^> ^> ^list = svc->getVenueList(msg);
@@ -36,59 +41,96 @@ bool Uploader2::ImportForm::loadVenues()
 	}
 
 	cbVenue->Items->Clear();
+	this->venues.Clear();
+	int selected = -1;
 	for (int i = 0; i < list[1]->Length; i++)
 	{
 		Venue^ v = gcnew Venue(list[0][i], list[1][i]);
 		this->venues.Add(v);
 		cbVenue->Items->Add(v->name());
+		selected = (targetId != nullptr && v->id() == targetId) ? i : 0;
 	}
 
-	// TODO: cache last selected so we can pick it again
-	if (this->venues.Count > 0)
-		cbVenue->SelectedIndex = 0;
+	if (selected >= 0)
+		cbVenue->SelectedIndex = selected;
 	else {
 		cbVenue->SelectedIndex = -1;
-		cbVenu->Text = "";
+		cbVenue->Text = "";
 	}
 
 	return true;
 }
 
-System::Void Uploader2::ImportForm::cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
-{
-	if (cbVenue->SelectedIndex >= 0 && cbVenue->SelectedIndex < this->venues.Count)
-	{
-		String ^msg;
-		array<array<String ^> ^> ^nlfield = svc->getVenueField(venues[cbVenue->SelectedIndex]->id(), msg);
-		if (msg->Length > 0)
-		{
-			MessageBox::Show(msg);
-			this->Close();
-			return;
-		}
 
-		cbField->Items->Clear();
-		cbField->SelectedIndex = -1;
-		for (int i = 0; i < nlfield[1]->Length; i++)
-			cbField->Items->Add(nlfield[1][i]);
+void Uploader2::ImportForm::loadFields(String^ targetId)
+{
+	String ^msg;
+	array<array<String ^> ^> ^list = svc->getVenueField(venues[cbVenue->SelectedIndex]->id(), msg);
+	if (msg->Length > 0)
+	{
+		MessageBox::Show(msg);
+		return;
 	}
 
-	if (cbField->Items->Count > 0)
-		cbField->SelectedIndex = 0;
+	cbField->Items->Clear();
+	this->fields.Clear();
+	int selected = -1;
+	cbField->Text = "";
+	for (int i = 0; i < list[1]->Length; i++)
+	{
+		Field^ f = gcnew Field(list[0][i], list[1][i]);
+		this->fields.Add(f);
+		cbField->Items->Add(f->name());
+		selected = (targetId != nullptr && f->id() == targetId) ? i : 0;
+	}
+
+	if (selected >= 0)
+		cbField->SelectedIndex = selected;
 	else {
 		cbField->SelectedIndex = -1;
 		cbField->Text = "";
 	}
 }
-
-System::Void Uploader2::ImportForm::btNewVenue_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+System::Void Uploader2::ImportForm::bnProperties_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	MessageBox::Show("not yet implemented");
+	PropertiesForm^ form = gcnew PropertiesForm(this->log, this->prefs);
+	form->ShowDialog();
 }
 
-System::Void Uploader2::ImportForm::btNewFieldd_Click(System::Object^  sender, System::EventArgs^  e)
+System::Void Uploader2::ImportForm::btNewVenue_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	MessageBox::Show("not yet implemented");
+	NewVenueForm ^form = gcnew NewVenueForm(log, svc);
+	if (Windows::Forms::DialogResult::OK == form->ShowDialog())
+	{
+		String^ id = form->getVenueId();
+		loadVenues(id);
+	}
+}
+
+System::Void Uploader2::ImportForm::cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
+{
+	if (cbVenue->SelectedIndex >= 0 && cbVenue->SelectedIndex < this->venues.Count)
+		loadFields(nullptr);
+
+	btNewField->Enabled = cbVenue->SelectedIndex >= 0;
+}
+
+System::Void Uploader2::ImportForm::btNewField_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	if (cbVenue->SelectedIndex >= 0)
+	{
+		NewFieldForm ^form = gcnew NewFieldForm(log, svc, venues[cbVenue->SelectedIndex]);
+		if (Windows::Forms::DialogResult::OK == form->ShowDialog())
+		{
+			String^ id = form->getFieldId();
+			loadFields(id);
+		}
+	}
+	else
+	{
+		// shouldn't be possible...
+		MessageBox::Show("No Venue Selected");
+	}
 }
 
 System::Void Uploader2::ImportForm::trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e)
@@ -110,7 +152,7 @@ System::Void Uploader2::ImportForm::ImportForm_Load(System::Object^  sender, Sys
 	LOGINFO("Getting a list of all team members");
 	loadUsers();
 	LOGINFO("Getting list of all venues");
-	loadVenues();
+	loadVenues(nullptr); // TODO: load favorite venue...
 
 	// Update title
 	String^ share = svc->isLocalClient() ? svc->getShareName() : "cloud";
@@ -123,6 +165,14 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 {
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
 	Importer ^imp = gcnew Importer(log);
+
+	if (prefs->_audioFilter >= 0 && prefs->_audioFilter < imp->getAudioFilterCount())
+		imp->selectAudioFilter(prefs->_audioFilter);
+	imp->setDetectionThresholds(prefs->_detectionThresholdLow, prefs->_detectionThresholdHigh);
+	imp->setFocusDropDelta(prefs->_focusDropDelta);
+	imp->setMinFocusMetric(prefs->_focusMetricMin);
+	imp->setImportedFrameCount(prefs->_frameCountBefore, prefs->_frameCountAfter);
+	//imp->setGamma();
 
 	// Do a quick check of the file formats prior to copy
 	for (int i = 0; i < lvi->Length; i++)
@@ -235,25 +285,24 @@ System::Void Uploader2::ImportForm::reportProgress(System::Object^  sender, Syst
 System::Void Uploader2::ImportForm::backgroundWorker1_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
 	if (e->Cancelled)
 		MessageBox::Show("Import cancelled");
-	else
-		if (done == false)
-			MessageBox::Show("Import failed");
+	else if (done == false)
+		MessageBox::Show("Import failed");
+
 	sslStat->Text = "Ready";
 	bImport->Text = "Import";
 	toolStripProgressBar1->Value = 0;
 	this->Close();
 }
 System::Void Uploader2::ImportForm::lvFiles_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
-	LOGINFO("Import Form: Delete key pressed on one of the items"); // Multi-seect is disabled, so only one item
 	if ((Keys)e->KeyCode == Keys::Delete)
 	{
+		LOGINFO("Import Form: Delete key pressed on ImportForm listview"); // Multi-seect is disabled, so only one item
 		for (int i = 0; i < lvFiles->Items->Count; i++) {
 			if (lvFiles->Items[i]->Selected)
 				lvFiles->Items[i]->Remove();
 		}
 	}
 }
-
 
 System::Void Uploader2::ImportForm::bImport_Click(System::Object^  sender, System::EventArgs^  e) {
 	if (bImport->Text->Equals("Cancel"))

@@ -7,7 +7,7 @@ Uploader2::UsernameCache::UsernameCache()
 {
 }
 
-void Uploader2::UsernameCache::update(String^ user)
+void Uploader2::UsernameCache::update(System::String^ user)
 {
 	_users.Add(user);
 	try
@@ -18,7 +18,7 @@ void Uploader2::UsernameCache::update(String^ user)
 			writer.WriteLine(user);
 		}
 	}
-	catch (Exception^ e)
+	catch (Exception^)
 	{
 	}
 }
@@ -35,7 +35,7 @@ bool Uploader2::UsernameCache::load()
 		}
 		in->Close();
 	}
-	catch (Exception^ e)
+	catch (Exception^)
 	{
 	}
 	return true;

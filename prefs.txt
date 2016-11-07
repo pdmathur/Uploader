@@ -1,0 +1,28 @@
+# analyzer currently defines 2 unique filters.  No details available
+# on differences nor which one is the default
+audio-filter-count=0
+
+# pair of values for audio thresholds.  0.0 < x 1.0, where lo < hi.  
+detection-threshold-low=0.2
+detection-threshold-high=0.8
+
+# focus-metric - percent change - used when selecting the shot fired frame. 
+# Value between 0 < x < 1.0.  Nominal value ~0.25
+focus-drop-delta=0.25
+
+# focus-metric - value - used when selecting shot fired frame.
+# value must be >0.  Nominal value between 10 and 20.
+focus-metric-min=10
+
+# number of frames to capture before and after the shot
+frame-count-before=50
+frame-count-after=59
+
+# other miscallenous settings.  
+username=rdmoore79@gmail.com
+password=Rational79
+local-upload-mode=true
+share-name=c:/rdmoore/uploads
+show-banner=true
+disable-update-check-true
+
