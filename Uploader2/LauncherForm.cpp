@@ -33,48 +33,48 @@ void Main(array<String^>^ args){
 	{
 		if (args[i]->Equals("local"))
 		{
-			prefs->_localMode = true;
-			prefs->_sharePath = _localName;
+			prefs->setLocalMode();
+			prefs->setSharePath(_localName);
 
 			if (args->Length >(i + 1) && args[i + 1]->StartsWith("\\\\"))
 			{
-				prefs->_sharePath = args[++i];
-				LOGINFO("Local share name set to " + prefs->_sharePath);
+				prefs->setSharePath(args[++i]);
+				LOGINFO("Local share name set to " + prefs->sharePath());
 			}
 		}
 		else if (args[i]->Equals("user") && args->Length >(i + 1))
 		{
-			prefs->_user = args[++i];
-			LOGINFO("User name set to " + prefs->_user);
+			prefs->setUsername(args[++i]);
+			LOGINFO("User name set to " + prefs->username());
 		}
 		else if (args[i]->Equals("pwd") && args->Length >(i + 1))
 		{
-			prefs->_password = args[++i];
+			prefs->setPassword(args[++i]);
 			LOGINFO("Password set");
 		}
 		else if (args[i]->Equals("nobanner"))
 		{
-			prefs->_showBanner = false;
+			prefs->disableBanner();
 			LOGINFO("Do not show banner.");
 		}
 		else if (args[i]->Equals("noupdate"))
 		{
-			prefs->_checkForUpdates = false;
+			prefs->disableUpdateCheck();
 		}
 	}
 
-	if (prefs->_showBanner)
+	if (prefs->showBanner())
 	{
 		LOGINFO("Show Banner");
 		Banner ^b = gcnew Banner();
 		b->ShowDialog();
 	}
 
-	Services ^svc = gcnew Services(log, /* isLocal = */ prefs->_localMode);
-	if (! prefs->_sharePath->Empty)
-		svc->setShareName(prefs->_sharePath);
+	Services ^svc = gcnew Services(log, prefs->localMode());
+	if (! prefs->sharePath()->Empty)
+		svc->setShareName(prefs->sharePath());
 
-	if (prefs->_checkForUpdates){
+	if (prefs->checkForUpdates()){
 		String ^msg;
 		Boolean result = svc->checkForAppUpdate(VERSION, msg);
 		if (msg->Length > 0)

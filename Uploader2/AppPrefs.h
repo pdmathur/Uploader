@@ -13,35 +13,68 @@ namespace Uploader2
 
 		bool load();
 
-	protected:
-		void setProperty(String^ key, String^ value);
-
-	public:
-		List<String^> _errors;
-		String^   _path;
-
-		bool      _localMode;
-		bool      _showBanner;
-		bool      _checkForUpdates;
-		String^   _sharePath;
-		String^   _user;
-		String^   _password;
-
 		// uploader
-		int    _audioFilter;
-		double _detectionThresholdLow;
-		double _detectionThresholdHigh;
-		double _focusDropDelta;
-		double _gamma;
-		int    _frameCountBefore;
-		int    _frameCountAfter;
-		double _focusMetricMin;
+		int^ audioFilter();
+		double^ detectionThresholdLow();
+		double^ detectionThresholdHigh();
+		double^ focusDropDelta();
+		double^ gamma();
+		int^ frameCountBefore();
+		int^ frameCountAfter();
+		double^ focusMetricMin();
 
 		// analyzer
-		int    _blurRadius;
-		int    _targetSearchWindow;
-		int    _initialTargetSearchWindow;
-		int    _minumumSpanPoints;
+		int^ blurRadius();
+		int^ targetSearchWindow();
+		int^ initialTargetSearchWindow();
+		int^ minimumSpanPoints();
+
+		bool localMode();
+		bool showBanner();
+		bool checkForUpdates();
+		String^ sharePath();
+		String^ password();
+		String^ username();
+
+	public: // property overrides
+		void setUsername(String^ user);
+		void setPassword(String^ password);
+		void setLocalMode();
+		void setSharePath(String^ path);
+		void disableBanner();
+		void disableUpdateCheck();
+
+	public: // general property accessors
+		int^ getInteger(String^ key);
+		double^ getDouble(String^ key);
+		bool getBoolean(String^ key, bool defaultValue);
+
+	protected:
+		Dictionary<String^, String^>^ _props;
+		String^       _path;
+
+		bool    _localMode;
+		bool    _showBanner;
+		bool    _checkForUpdates;
+		String^ _sharePath;
+		String^ _user;
+		String^ _password;
+
+		// uploader
+		int^    _audioFilter;
+		double^ _detectionThresholdLow;
+		double^ _detectionThresholdHigh;
+		double^ _focusDropDelta;
+		double^ _gamma;
+		int^    _frameCountBefore;
+		int^    _frameCountAfter;
+		double^ _focusMetricMin;
+
+		// analyzer
+		int^    _blurRadius;
+		int^    _targetSearchWindow;
+		int^    _initialTargetSearchWindow;
+		int^    _minimumSpanPoints;
 	};
 }
 

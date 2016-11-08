@@ -48,9 +48,13 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		imlist->ColorDepth = ColorDepth::Depth24Bit;
 		imlist->ImageSize = Drawing::Size(200, 150);
 
-		a->setBlurRadius(prefs->_blurRadius);
-		a->setTargetSearchWindowWidth(prefs->_targetSearchWindow, prefs->_initialTargetSearchWindow);
-		a->setMinSpanPoints(prefs->_minumumSpanPoints);
+		if (prefs->blurRadius() != nullptr)
+			a->setBlurRadius(*prefs->blurRadius());
+		if (prefs->targetSearchWindow() != nullptr && prefs->initialTargetSearchWindow() != nullptr)
+			a->setTargetSearchWindowWidth(*prefs->targetSearchWindow(), *prefs->initialTargetSearchWindow());
+		if (prefs->minimumSpanPoints() != nullptr)
+			a->setMinSpanPoints(*prefs->minimumSpanPoints());
+
 		//a->setAimPoint();
 		//a->setAimRadius();
 

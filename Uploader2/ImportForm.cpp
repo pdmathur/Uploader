@@ -166,13 +166,18 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
 	Importer ^imp = gcnew Importer(log);
 
-	if (prefs->_audioFilter >= 0 && prefs->_audioFilter < imp->getAudioFilterCount())
-		imp->selectAudioFilter(prefs->_audioFilter);
-	imp->setDetectionThresholds(prefs->_detectionThresholdLow, prefs->_detectionThresholdHigh);
-	imp->setFocusDropDelta(prefs->_focusDropDelta);
-	imp->setMinFocusMetric(prefs->_focusMetricMin);
-	imp->setImportedFrameCount(prefs->_frameCountBefore, prefs->_frameCountAfter);
-	//imp->setGamma();
+	if (prefs->audioFilter() != nullptr && *prefs->audioFilter() < imp->getAudioFilterCount())
+		imp->selectAudioFilter(*prefs->audioFilter());
+	if (prefs->detectionThresholdLow() != nullptr && prefs->detectionThresholdHigh() != nullptr)
+		imp->setDetectionThresholds(*prefs->detectionThresholdLow(), *prefs->detectionThresholdHigh());
+	if (prefs->focusDropDelta() != nullptr)
+		imp->setFocusDropDelta(*prefs->focusDropDelta());
+	if (prefs->focusMetricMin() != nullptr)
+		imp->setMinFocusMetric(*prefs->focusMetricMin());
+	if (prefs->frameCountBefore() != nullptr && prefs->frameCountAfter() != nullptr)
+		imp->setImportedFrameCount(*prefs->frameCountBefore(), *prefs->frameCountAfter());
+	if (prefs->gamma() != nullptr)
+		imp->setGamma(*prefs->gamma());
 
 	// Do a quick check of the file formats prior to copy
 	for (int i = 0; i < lvi->Length; i++)

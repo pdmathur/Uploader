@@ -76,8 +76,8 @@ System::Void Uploader2::LoginForm::bSignIn_Click(System::Object^  sender, System
 System::Void Uploader2::LoginForm::LoginForm_Load(System::Object^  sender, System::EventArgs^  e) {
 	this->FormBorderStyle = Windows::Forms::FormBorderStyle::FixedSingle;
 
-	tbUser->Text = prefs->_user;
-	tbPwd->Text = prefs->_password;
+	tbUser->Text = prefs->username();
+	tbPwd->Text = prefs->password();
 
 	cache.load();
 	for each (String^ user in cache._users)
