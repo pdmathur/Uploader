@@ -6,36 +6,32 @@ System::Void Uploader2::ScoreForm::ScoreForm_FormClosed(System::Object^  sender,
 	delete a;
 	LOGINFO("Scoreform closed.");
 }
-System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, System::EventArgs^  e) {
-	mousePt = Point(-1, -1);
 
-	setModeNone();
-	viewType = "post";
-	windowSet = false;
-
-	rootFolder = Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader";
+System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, System::EventArgs^  e)
+{
+	this->dragging = false;
+	this->mouseDown = false;
+	this->selIndex = -1;
+	this->rootFolder = Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader";
 	LOGINFO("Score form root folder is " + rootFolder);
 
 	if (folder == nullptr || folder->Length == 0)
 	{
 		fbdEvent->Description = "Select the event to score";
 		fbdEvent->ShowNewFolderButton = false;
-		if (System::IO::Directory::Exists(rootFolder))
-			fbdEvent->SelectedPath = rootFolder;
-		else
+		if (!System::IO::Directory::Exists(rootFolder))
 		{
 			MessageBox::Show("Make sure that you have downloaded/selected a video before you try to score it!");
 			this->Close();
 			return;
 		}
-		System::Windows::Forms::DialogResult dr = fbdEvent->ShowDialog();
-		if (dr == System::Windows::Forms::DialogResult::OK)
-			folder = fbdEvent->SelectedPath;
-		else
+		fbdEvent->SelectedPath = rootFolder;
+		if (fbdEvent->ShowDialog() != System::Windows::Forms::DialogResult::OK)
 		{
 			this->Close();
 			return;
 		}
+		this->folder = this->fbdEvent->SelectedPath;
 	}
 
 	a = gcnew Analyzer(log, rootFolder, folder);
@@ -60,20 +56,11 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 
 		if (!a->isSavedDataDirty()) // we should process this roll, the anlyzer has not been used on it
 		{
-			mode = MODE_INIT;
-			lWait->Visible = true;
-			makeControlsInvisible();
-			pbTriage->Visible = true;
+			this->setModeInit();
 			bwTriage->RunWorkerAsync();
 		}
 		else
 		{
-			a->calcExportMetricsAndgetHitsCount();
-			if (a->getShotsCount() > 0)
-			{
-				windowSet = true;
-				viewType = "pre";
-			}
 			setModeNone();
 			showListWithOriginals(); 				// Update thumbnails
 			tbHit->Text = a->getHitsCount().ToString();		// Update hits
@@ -85,8 +72,6 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		MessageBox::Show("Could not initialize analyzer with folder " + folder);
 		this->Close();
 	}
-
-	timer1->Enabled = true;
 }
 
 void Uploader2::ScoreForm::showListWithOriginals()
@@ -104,97 +89,84 @@ void Uploader2::ScoreForm::showListWithOriginals()
 		lvShots->Items->Add(lvi);
 	}
 }
-System::Void Uploader2::ScoreForm::lvShots_Click(System::Object^  sender, System::EventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::lvShots_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	LOGINFO("Listview click");
 	ListView::SelectedListViewItemCollection ^lvi = ((ListView ^)sender)->SelectedItems;
 	if (lvi->Count == 1)
 	{
-		selIndex = lvi[0]->Index;
+		this->selIndex = lvi[0]->Index;
 		LOGINFO("Listview click -- one item " + selIndex + " is selected");
-
-		Point manualTgt = a->getManPos(selIndex);
-		if (!windowSet)
-		{
-			setModeViewShot();
-		}
-		else
-		{
-			setModeScore();
-			a->selectVideo(selIndex);
-		}
-		pbPreview->Visible = true;
-		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);  // the frame with clay showing
+		this->setModeScore();
+		this->a->selectVideo(this->selIndex);
+		this->pbPreview->Image = this->a->createBM(this->viewType, this->selIndex, this->pbPreview->Size); // the frame with clay showing
 	}
 	lvShots->SelectedItems->Clear();  // do this so next time toggling a checkbox doesn't also fire this event
 }
-System::Void Uploader2::ScoreForm::bBack_Click(System::Object^  sender, System::EventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::bBack_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	LOGINFO("Back button clicked");
-	if (mode == MODE_VIEWSHOT)
-	{
-		setModeNone();
-	}
-	else if (mode == MODE_FINDTARGET)
-	{
-		if (selIndex > 0) // not the first point
-		{
-			//cv::Rect newWin(*mousePt - cv::Point(a->exportSize->width / 2, a->exportSize->height / 8), *(a->exportSize));
-			windowSet = true;
-			//a->setWin(newWin);
-		}
-		setModeNone();
-		viewType = "pre";
-		showListWithOriginals();
-	}
-	else if (mode == MODE_SCORE)
-	{
-		setModeNone();
-	}
-	else if (mode == MODE_AIMPOINT)
-	{
-		setModeNone();
-		viewType = "pre";
-		showListWithOriginals(); 				// Update thumbnails
-	}
-	else if (mode == MODE_MANUAL)
+	if (mode == Mode::Manual)
 	{
 		setModeScore();
 		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // Money shot
 	}
+	else if (mode == Mode::Init)
+	{
+		bwTriage->CancelAsync();
+		bBack->Text = "Wait!";
+	}
+	else
+	{
+		setModeNone();
+		showListWithOriginals();
+	}
+}
+
+void Uploader2::ScoreForm::setModeInit()
+{
+	LOGINFO("Setting mode to INIT");
+	makeControlsInvisible();
+	mode = Mode::Init;
+	lWait->Visible = true;
+	pbTriage->Visible = true;
+	bBack->Text = "Cancel";
+	bBack->Visible = true;
+	lClickPrompt->Text = "Auto-detecting.  Press Cancel to stop and do this manually.";
+}
+
+void Uploader2::ScoreForm::setModeManual()
+{
+	LOGINFO("Setting mode to MANUAL");
+	mode = Mode::Manual;
+	makeControlsInvisible();
+	viewType = "pre";
+	bBack->Visible = true;
+	pbPreview->Visible = true;
+	lClickPrompt->Text = "Select 3 points on the line.  Wait ~10s after that";
 }
 
 void Uploader2::ScoreForm::setModeNone()
 {
 	LOGINFO("Setting mode to NONE");
-	mode = MODE_NONE;
 	makeControlsInvisible();
-	bSetWindow->Visible = true;
+	mode = Mode::None;
 	lvShots->Visible = true;
-	if (windowSet)
-	{
-		bResetPost->Visible = true;
-		bUpdAnalysis->Visible = true;
-		bAimPoint->Visible = true;
-		bDone->Visible = true;
-	}
-}
-
-void Uploader2::ScoreForm::setModeViewShot()
-{
-	LOGINFO("Setting mode to VIEWSHOT");
-	mode = MODE_VIEWSHOT;
-	makeControlsInvisible();
-	viewType = "post";
-	lClickPrompt->Text = "Showing post-shot frame.  Set Window to go to scoring.";
-	bPlay->Visible = true;
-	bBack->Visible = true;
+	bResetPost->Visible = true;
+	bUpdAnalysis->Visible = true;
+	bAimPoint->Visible = true;
+	bDone->Visible = true;
+	viewType = "pre";
+	lClickPrompt->Text = "Click on a shot to adjust it.  * toggles post shot frame.";
 }
 
 void Uploader2::ScoreForm::setModeScore()
 {
 	LOGINFO("Setting mode to SCORE");
-	mode = MODE_SCORE;
+	mode = Mode::Score;
 	makeControlsInvisible();
-	viewType = "pre";
 	pbPreview->Visible = true;
 	bPlay->Visible = true;
 	bHit->Visible = true;
@@ -203,286 +175,186 @@ void Uploader2::ScoreForm::setModeScore()
 	bNextShot->Visible = true;
 	bPrevShot->Visible = true;
 	bManual->Visible = true;
-	bIncFS->Visible = true;
-	bDecFS->Visible = true;
-}
-
-void Uploader2::ScoreForm::setModeManual()
-{
-	LOGINFO("Setting mode to MANUAL");
-	mode = MODE_MANUAL;
-	makeControlsInvisible();
+	lZoom->Visible = true;
+	bZoomIn->Visible = true;
+	bZoomOut->Visible = true;
 	viewType = "pre";
-	bBack->Visible = true;
-	pbPreview->Visible = true;
+	lClickPrompt->Text = "You can scroll the viewpoint by dragging the mouse";
 }
 
 void Uploader2::ScoreForm::setModeSetAimpoint()
 {
 	LOGINFO("Setting mode to AIMPOINT");
-	mode = MODE_AIMPOINT;
+	mode = Mode::Aimpoint;
 	makeControlsInvisible();
-	viewType = "aim";
 	bBack->Visible = true;
 	pbPreview->Visible = true;
 	nudAimRadius->Visible = true;
+	lZoom->Visible = true;
+	bZoomIn->Visible = true;
+	bZoomOut->Visible = true;
+	viewType = "aim";
+	lClickPrompt->Text = "You can scroll the viewpoint by dragging the mouse";
 }
 
-void Uploader2::ScoreForm::setModeFindTarget()
+System::Void Uploader2::ScoreForm::bPlay_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	LOGINFO("Setting mode to FIND TARGET");
-	mode = MODE_FINDTARGET;
-	makeControlsInvisible();
-	viewType = "setwin";
-	pbPreview->Visible = true;
-	bBack->Visible = true;
-}
-
-System::Void Uploader2::ScoreForm::bPlay_Click(System::Object^  sender, System::EventArgs^  e) {
 	LOGINFO("Play button clicked");
 	if (!bwVideo->IsBusy)
 		bwVideo->RunWorkerAsync();
 }
 
-System::Void Uploader2::ScoreForm::bSetWindow_Click(System::Object^  sender, System::EventArgs^  e) {
-	LOGINFO("Setwindow button clicked");
-	for (int i = 0; i < a->getVideoCount(); i++)
-		if (a->isShot(i))
-		{
-			setModeFindTarget();
-			selIndex = -i; // save this value, but negate it so we can determine later that it is the first one
-
-			// Set window to center of original video (default)
-			//cv::Rect newWin(cv::Point((a->vidSize->width - a->exportSize->width) / 2, (a->vidSize->height - a->exportSize->height) / 2),
-			//*(a->exportSize));
-			//a->setWin(newWin);
-			windowSet = false;
-
-			pbPreview->Image = a->createBM(viewType, i, pbPreview->Size);  // the frame before the shot
-			lClickPrompt->Text = "Click where you see the target";
-			return;
-		}
-	MessageBox::Show("You must at least check one box which you think is a shot!");
-}
-
-System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-	mousePt.X = a->tl(-1).X + (int)(0.5 + e->Location.X * ((double)a->width() / pbPreview->Width));
-	mousePt.Y = a->tl(-1).Y + (int)(0.5 + e->Location.Y * ((double)a->height() / pbPreview->Height));
-
-	LOGINFO("Mouse clicked.  Normalized (" + mousePt.X + "," + mousePt.Y + ")");
-
-	if (mode == MODE_FINDTARGET) // we are selecting target point 
+System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+{
+	LOGINFO("Mouse clicked.  Normalized (" + e->Location.X + "," + e->Location.Y + ")");
+	if (mode == Mode::Score && !this->dragging)
 	{
-		if (selIndex <= 0) // the first one is less than 0
-		{
-			// use it to setup the window
-			//cv::Rect newWin(*mousePt - cv::Point(a->exportSize->width / 2 - a->exportSize->width / 4, a->exportSize->height / 8), *(a->exportSize) / 2); // zoom in
-			//if (newWin.x + a->exportSize->width > a->vidWidth())
-			//					newWin.x = a->vidWidth() - a->exportSize->width;
-			//			if (newWin.y + a->exportSize->height > a->vidHeight())
-			//			newWin.y = a->vidHeight() - a->exportSize->height;
-			//a->setWin(newWin);
-		}
-
-		selIndex = abs(selIndex);
-		a->setManPos(selIndex, mousePt);
-		LOGINFO("Saved at target location for " + selIndex);
-
-		// look for next shot
-		if (1)
-		{
-			for (int i = selIndex + 1; i < a->getVideoCount(); i++)
-				if (a->isShot(i))
-				{
-					selIndex = i; // save this value
-					pbPreview->Image = a->createBM(viewType, i, pbPreview->Size);  // the frame before the shot
-					return;
-				}
-		}
-
-		//cv::Rect newWin(*mousePt - cv::Point(a->exportSize->width / 2, a->exportSize->height / 8), *(a->exportSize));
-		//a->setWin(newWin);
-		windowSet = true;
-		setModeNone();
-		viewType = "pre";
-		showListWithOriginals(); // redraw because bounding box changed
-	}
-	else if (mode == MODE_SCORE) // we are clicking on the preview
-	{
-		a->setManPos(selIndex, mousePt);
 		a->resetTargetPos(selIndex);
-		a->selectVideo(selIndex);
-		//a->analyzeShotFromBeginning(true);
-		a->analyzeShot3(true);
-		updateListReplaceShot();
+		a->mapToView(e->Location, pbPreview->Size);
+		a->analyzeShotFromBeginning(true);
+		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
+		tbHit->Text = a->getHitsCount().ToString();
 	}
-	else if (mode == MODE_MANUAL) // we are clicking on the preview
+	else if (mode == Mode::Manual)
 	{
-		pbPreview->Image = a->registerClickOnDiffBM(pbPreview->Size, e->Location);
+		pbPreview->Image = a->registerClickOnDiffBM(e->Location, pbPreview->Size);
+	}
+	else if (mode == Mode::Aimpoint && !this->dragging)
+	{
+		a->mapToView(e->Location, pbPreview->Size);
+		this->tbHit->Text = a->getHitsCount().ToString();
 	}
 }
-void Uploader2::ScoreForm::updateListShowMoneygetShotsCount() // Update list using windowed views
+
+System::Void Uploader2::ScoreForm::lvShots_ItemChecked(System::Object^  sender, System::Windows::Forms::ItemCheckedEventArgs^  e)
 {
-	LOGINFO("Update list show money shots");
-	lvShots->LargeImageList = imlist;
-	lvShots->Clear();
-	imlist->Images->Clear();
-
-	for (int i = 0; i < a->getVideoCount(); i++)
-	{
-		ListViewItem ^lvi = gcnew ListViewItem();
-		imlist->Images->Add(a->createBM(viewType, i, imlist->ImageSize));
-		lvi->ImageIndex = i;
-		lvi->Checked = a->isShot(i);
-		lvShots->Items->Add(lvi);
-	}
-	lClickPrompt->Text = "Windowed View";
-	lvShots->Refresh();
-}
-
-void Uploader2::ScoreForm::updateListReplaceShot() // Update list using windowed views
-{
-	LOGINFO("Update list replace shot " + selIndex);
-	if (selIndex >= 0 && selIndex < a->getVideoCount())
-	{
-		imlist->Images[selIndex] = a->createBM(viewType, selIndex, imlist->ImageSize);  // the frame prior to the shot
-		lvShots->Refresh();
-		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);  // the frame prior to the shot
-	}
-	tbShots->Text = a->getShotsCount().ToString();
-	tbHit->Text = a->getHitsCount().ToString();
-}
-
-System::Void Uploader2::ScoreForm::lvShots_ItemChecked(System::Object^  sender, System::Windows::Forms::ItemCheckedEventArgs^  e) {
 	LOGINFO("Item checked.  Updating counts.");
 	a->setShot(e->Item->Index, lvShots->Items[e->Item->Index]->Checked);
 	tbShots->Text = a->getShotsCount().ToString();
 	tbHit->Text = a->getHitsCount().ToString();
 }
 
-System::Void Uploader2::ScoreForm::bUpdAnalysis_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bUpdAnalysis_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	LOGINFO("Update Analysis button clicked");
-
-	// check if each check marked target has a manual position
-	Boolean manualCheck = true;
-	for (int i = 0; i < a->getVideoCount(); i++)
-	{
-		if (a->isShot(i) && (a->getManPos(i).X < 0 || a->getManPos(i).Y < 0))
-		{
-			manualCheck = false;
-			break;
-		}
-	}
-
-	if (manualCheck == false)
-	{
-		MessageBox::Show("Targets have not been indentified for all selected shots");
-		return;
-
-		if (MessageBox::Show(
-			"You have not completed manual setting of target location in each shot.  Continue anyway?",
-			"Targets not identified", MessageBoxButtons::YesNo,
-			MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::No)
-			return;
-	}
-
-	for (int i = 0; i < a->getVideoCount(); i++)
-	{
-		if (a->isShot(i)) // Only update analysis for checked items
-		{
-			LOGINFO("Updating shot #" + i);
-			selIndex = i;
-			a->selectVideo(i);
-			a->analyzeShotFromBeginning();
-			//a->analyzeShot3(false);
-			updateListReplaceShot();
-		}
-	}
+	setModeInit();
+	bwTriage->RunWorkerAsync();
 }
 
-System::Void Uploader2::ScoreForm::bHit_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bHit_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	LOGINFO("Hit button pressed for item #" + selIndex.ToString());
 	a->setHit(selIndex, true);
 	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
 	imlist->Images[selIndex] = a->createBM(viewType, selIndex, imlist->ImageSize);
 	tbHit->Text = a->getHitsCount().ToString();
 }
 
-System::Void Uploader2::ScoreForm::bMiss_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bMiss_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	LOGINFO("Miss button pressed for item #" + selIndex.ToString());
 	a->setHit(selIndex, false);
 	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // display this image in the preview
 	imlist->Images[selIndex] = a->createBM(viewType, selIndex, imlist->ImageSize); // update thumnail
 	tbHit->Text = a->getHitsCount().ToString();
 }
 
-System::Void Uploader2::ScoreForm::bNextShot_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bNextShot_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	LOGINFO("Next Shot click");
 	for (int i = selIndex + 1; i < a->getVideoCount(); i++) // go to next shot
+	{
 		if (a->isShot(i))
 		{
 			selIndex = i;
+			a->selectVideo(i);
 			pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);  // the frame prior to the shot
-			//bPlay_Click(sender, e);
 			return;
 		}
+	}
 	System::Windows::Forms::MessageBox::Show("No more shots identified by check marks past this one.");
 }
 
 System::Void Uploader2::ScoreForm::bPrevShot_Click(System::Object^  sender, System::EventArgs^  e) {
+	LOGINFO("Prev Shot click");
 	for (int i = selIndex - 1; i >= 0; i--) // go to previous shot
+	{
 		if (a->isShot(i))
 		{
 			selIndex = i;
+			a->selectVideo(i);
 			pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);  // the frame prior to the shot
-			//bPlay_Click(sender, e);
 			return;
 		}
+	}
 	System::Windows::Forms::MessageBox::Show("No more shots identified by check marks previous to this one.");
 }
 
-System::Void Uploader2::ScoreForm::bManual_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bManual_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	LOGINFO("Manual mode invoked for frame #" + selIndex);
 	setModeManual();
-	a->selectVideo(selIndex);
 	a->resetTargetPos(selIndex);
 	pbPreview->Image = a->initDiffBM(pbPreview->Size, MAX_MANUAL_PTS);
 }
 
-System::Void Uploader2::ScoreForm::bPrevFrame_Click(System::Object^  sender, System::EventArgs^  e) {
-	if (manualIdx > -50) // -tf
-		manualIdx--;
-	pbPreview->Image = a->showDiffBM(pbPreview->Size);
-}
-
-System::Void Uploader2::ScoreForm::bNextFrame_Click(System::Object^  sender, System::EventArgs^  e) {
-	if (manualIdx < -1)
-		manualIdx++;
-	pbPreview->Image = a->showDiffBM(pbPreview->Size);
-}
-
-System::Void Uploader2::ScoreForm::bAimPoint_Click(System::Object^  sender, System::EventArgs^  e) {
-	nudAimRadius->Value = a->getAimRadius(); // preload
+System::Void Uploader2::ScoreForm::bAimPoint_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	setModeSetAimpoint();
-	pbPreview->Image = a->createBM(viewType, -1, pbPreview->Size);
+	selIndex = -1;
+	a->selectVideo(-1);
+	nudAimRadius->Value = a->getAimRadius(); // preload
+	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
 }
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-	if (mode == MODE_AIMPOINT)
+	if (mode == Mode::Aimpoint || mode == Mode::Score)
 	{
-		a->mapAimPointToView(Drawing::Rectangle(e->Location, pbPreview->Size));
-		a->calcExportMetricsAndgetHitsCount();
-		tbHit->Text = a->getHitsCount().ToString();		// Update hits
+		mouseDownPos = e->Location;
+		this->dragging = false;
+		this->mouseDown = true;
+		this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 	}
 }
 
-System::Void Uploader2::ScoreForm::pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-}
-
-System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-	if (mode == MODE_AIMPOINT)
+System::Void Uploader2::ScoreForm::pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+{
+	if (mode == Mode::Aimpoint || mode == Mode::Score)
 	{
-		pbPreview->Image = a->createBM("aim", e->Location.X | (e->Location.Y << 16), pbPreview->Size);
+		this->pbPreview->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
+		this->mouseDown = false;
 	}
 }
 
-System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+{
+	Point point(mouseDownPos.X - e->Location.X, mouseDownPos.Y - e->Location.Y);
+	if (!this->dragging && this->mouseDown)
+	{
+		if (Math::Abs(point.Y) + Math::Abs(point.X) > 5)
+			this->dragging = true;
+	}
+
+	if (this->mode == Mode::Aimpoint)
+	{
+		if (this->dragging && this->mouseDown)
+		{
+			a->adjustWindowTL(point);
+			this->mouseDownPos = e->Location;
+		}
+		int index = e->Location.X | (e->Location.Y << 16);
+		pbPreview->Image = a->createBM(viewType, index, pbPreview->Size);
+	}
+	else if (this->mode == Mode::Score && this->dragging && this->mouseDown)
+	{
+		a->adjustWindowTL(point);
+		mouseDownPos = e->Location;
+		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
+	}
+}
+
+System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	// All done, go and upload these
 	if (a->getAimPoint().X < 0 || a->getAimPoint().Y < 0)
 		MessageBox::Show("Aim Point is not set.  Go to jail.  Do not collect pay.  Skip three turns or roll a six.");
@@ -493,23 +365,27 @@ System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::
 	}
 }
 
-System::Void Uploader2::ScoreForm::ScoreForm_Resize(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::ScoreForm_Resize(System::Object^  sender, System::EventArgs^  e)
+{
 	lvShots->Width = this->Width - 23;
 	lvShots->Height = this->Height - (603 - 480);
 	bDone->Top = this->Height - (603 - 541);
 }
 
-System::Void Uploader2::ScoreForm::bDecFS_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bDecFS_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	if (a->getMinFirstShot() > 0)
 		a->setMinFirstShot(a->getMinFirstShot() - 1);
 }
 
-System::Void Uploader2::ScoreForm::bIncFS_Click(System::Object^  sender, System::EventArgs^  e) {
+System::Void Uploader2::ScoreForm::bIncFS_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	if (a->getMinFirstShot() < 30)
 		a->setMinFirstShot(a->getMinFirstShot() + 1);
 }
 
-System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+{
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
 
 	if (!a->loadVideoForPlayBack(selIndex, 40, 90))
@@ -517,6 +393,7 @@ System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, Syste
 		MessageBox::Show("Error has occured in playing back video");
 		return;
 	}
+
 	int keyCode = a->renderPlayBackFrame();
 	while (keyCode == -1)
 	{
@@ -552,13 +429,19 @@ System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, Syste
 		*/
 	}
 }
-System::Void Uploader2::ScoreForm::bwVideo_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::bwVideo_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
+{
 	LOGINFO("Player finished playing");
 	tbHit->Text = a->getHitsCount().ToString();
-	tbShots->Text = a->getShotsCount().ToString();
-	updateListReplaceShot(); // in case hit/miss changed
+	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
+
+	//tbShots->Text = a->getShotsCount().ToString();
+	//updateListReplaceShot(); // in case hit/miss changed
 }
-System::Void Uploader2::ScoreForm::bResetPost_Click(System::Object^  sender, System::EventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::bResetPost_Click(System::Object^  sender, System::EventArgs^  e)
+{
 	if (viewType->Equals("post"))
 		viewType = "pre";
 	else
@@ -566,49 +449,53 @@ System::Void Uploader2::ScoreForm::bResetPost_Click(System::Object^  sender, Sys
 
 	showListWithOriginals(); // repaint the thumbnails
 }
-System::Void Uploader2::ScoreForm::timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
-	timer1->Enabled = false;
-	//MessageBox::Show("Cannot initialize 3DAPI");
-	//Close();
-}
-System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+{
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
-	Drawing::Size videoSize = a->getVideoSize();
+
 	int margins = 50; // force a 50 px offset from each side
-	a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - 2 * margins, videoSize.Height - 2 * margins));
+	Drawing::Size videoSize = a->getVideoSize();
+	a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - (2 * margins), videoSize.Height - (2 * margins)));
+
 	for (int i = 0; i < a->getVideoCount(); i++)
 	{
 		a->selectVideo(i); // load video into memory
-		if (a->analyzeShotFromBeginning() == false)
-		{
-			a->setShot(i, false);
-		}
-		else
-		{
-			a->setShot(i, true);
-		}
-		worker->ReportProgress((int)(0.5 + 100.0 * i / a->getVideoCount()));
+		a->setShot(i, a->analyzeShotFromBeginning(false));
+		worker->ReportProgress((int)((double)i * 100.0 / (double)a->getVideoCount() + 0.5));
+		a->saveAnalysisData(); // do after a complete run is done
 	}
-	a->saveAnalysisData(); // do after a complete run is done
 
-	return;
+	e->Cancel = true;
 }
-System::Void Uploader2::ScoreForm::bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
-	a->calcExportMetricsAndgetHitsCount();
-	lWait->Visible = false;
-	if (a->getShotsCount() > 0)
-	{
-		windowSet = true;
-		viewType = "pre";
-	}
+
+System::Void Uploader2::ScoreForm::bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
+{
 	setModeNone();
-	showListWithOriginals(); 				// Update thumbnails
-	tbHit->Text = a->getHitsCount().ToString();		// Update hits
-	tbShots->Text = a->getShotsCount().ToString();	// Update selected shots
+	showListWithOriginals(); // Update thumbnails
+	tbHit->Text = a->getHitsCount().ToString(); // Update hits
+	tbShots->Text = a->getShotsCount().ToString(); // Update selected shots
+	nudAimRadius->Value = a->getAimRadius();
 }
-System::Void Uploader2::ScoreForm::bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
+{
 	pbTriage->Value = e->ProgressPercentage;
 }
-System::Void Uploader2::ScoreForm::nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+
+System::Void Uploader2::ScoreForm::nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e)
+{
 	a->setAimRadius((int)nudAimRadius->Value);
+}
+
+System::Void Uploader2::ScoreForm::bZoomIn_Click(System::Object^  sender, System::EventArgs^ e)
+{
+	a->ZoomIn();
+	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
+}
+
+System::Void Uploader2::ScoreForm::bZoomOut_Click(System::Object^  sender, System::EventArgs^ e)
+{
+	a->ZoomOut();
+	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
 }

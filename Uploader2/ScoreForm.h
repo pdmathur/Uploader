@@ -3,13 +3,13 @@
 #include "AppPrefs.h"
 
 // Modes for the UI
-#define MODE_INIT -1
-#define MODE_NONE 0
-#define MODE_VIEWSHOT 1
-#define MODE_MANUAL 2
-#define MODE_AIMPOINT 3
-#define MODE_FINDTARGET 4
-#define MODE_SCORE 5
+//#define MODE_INIT -1
+//#define MODE_NONE 0
+//#define MODE_VIEWSHOT 1
+//#define MODE_MANUAL 2
+//#define MODE_AIMPOINT 3
+//#define MODE_FINDTARGET 4
+//#define MODE_SCORE 5
 
 #define MAX_MANUAL_PTS 3
 
@@ -55,6 +55,13 @@ namespace Uploader2 {
 		}
 
 	protected:
+		enum class Mode{
+			Init = 0,
+			None = 1,
+			Manual = 2,
+			Aimpoint = 3,
+			Score = 4,
+		};
 
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::TextBox^  tbShots;
@@ -63,7 +70,6 @@ namespace Uploader2 {
 	private: System::Windows::Forms::TextBox^  tbHit;
 
 	private: System::Windows::Forms::Label^  lClickPrompt;
-	private: System::Windows::Forms::Button^  bSetWindow;
 
 	private: System::Windows::Forms::ListView^  lvShots;
 	private: System::Windows::Forms::PictureBox^  pbPreview;
@@ -77,29 +83,19 @@ namespace Uploader2 {
 	private: System::Windows::Forms::Button^  bManual;
 	private: System::Windows::Forms::Button^  bBack;
 	private: System::Windows::Forms::Button^  bAimPoint;
-
-
-
 	private: System::Windows::Forms::Button^  bNextShot;
-
-
-
-	private: System::Windows::Forms::Button^  bNextFrame;
-	private: System::Windows::Forms::Button^  bPrevFrame;
 	private: System::Windows::Forms::Button^  bPrevShot;
-
 	private: System::Windows::Forms::Button^  bDecFS;
 	private: System::Windows::Forms::Button^  bIncFS;
 	private: System::ComponentModel::BackgroundWorker^  bwVideo;
 	private: System::Windows::Forms::Button^  bResetPost;
-	private: System::Windows::Forms::Timer^  timer1;
 	private: System::Windows::Forms::Label^  lWait;
 	private: System::ComponentModel::BackgroundWorker^  bwTriage;
 	private: System::Windows::Forms::ProgressBar^  pbTriage;
 	private: System::Windows::Forms::NumericUpDown^  nudAimRadius;
-
-
-
+	private: System::Windows::Forms::Label^  lZoom;
+	private: System::Windows::Forms::Button^  bZoomIn;
+	private: System::Windows::Forms::Button^  bZoomOut;
 
 	private: System::ComponentModel::IContainer^  components;
 
@@ -121,7 +117,6 @@ namespace Uploader2 {
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->tbHit = (gcnew System::Windows::Forms::TextBox());
 			this->lClickPrompt = (gcnew System::Windows::Forms::Label());
-			this->bSetWindow = (gcnew System::Windows::Forms::Button());
 			this->lvShots = (gcnew System::Windows::Forms::ListView());
 			this->pbPreview = (gcnew System::Windows::Forms::PictureBox());
 			this->bUpdAnalysis = (gcnew System::Windows::Forms::Button());
@@ -134,18 +129,18 @@ namespace Uploader2 {
 			this->bBack = (gcnew System::Windows::Forms::Button());
 			this->bAimPoint = (gcnew System::Windows::Forms::Button());
 			this->bNextShot = (gcnew System::Windows::Forms::Button());
-			this->bNextFrame = (gcnew System::Windows::Forms::Button());
-			this->bPrevFrame = (gcnew System::Windows::Forms::Button());
 			this->bPrevShot = (gcnew System::Windows::Forms::Button());
 			this->bDecFS = (gcnew System::Windows::Forms::Button());
 			this->bIncFS = (gcnew System::Windows::Forms::Button());
 			this->bwVideo = (gcnew System::ComponentModel::BackgroundWorker());
 			this->bResetPost = (gcnew System::Windows::Forms::Button());
-			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->lWait = (gcnew System::Windows::Forms::Label());
 			this->bwTriage = (gcnew System::ComponentModel::BackgroundWorker());
 			this->pbTriage = (gcnew System::Windows::Forms::ProgressBar());
 			this->nudAimRadius = (gcnew System::Windows::Forms::NumericUpDown());
+			this->lZoom = (gcnew System::Windows::Forms::Label());
+			this->bZoomIn = (gcnew System::Windows::Forms::Button());
+			this->bZoomOut = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbPreview))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudAimRadius))->BeginInit();
 			this->SuspendLayout();
@@ -205,16 +200,6 @@ namespace Uploader2 {
 			this->lClickPrompt->TabIndex = 13;
 			this->lClickPrompt->Text = L"Select the frames that contain shots.  Then press Set Window";
 			// 
-			// bSetWindow
-			// 
-			this->bSetWindow->Location = System::Drawing::Point(405, 19);
-			this->bSetWindow->Name = L"bSetWindow";
-			this->bSetWindow->Size = System::Drawing::Size(75, 23);
-			this->bSetWindow->TabIndex = 14;
-			this->bSetWindow->Text = L"Set Window";
-			this->bSetWindow->UseVisualStyleBackColor = true;
-			this->bSetWindow->Click += gcnew System::EventHandler(this, &ScoreForm::bSetWindow_Click);
-			// 
 			// lvShots
 			// 
 			this->lvShots->CheckBoxes = true;
@@ -235,7 +220,7 @@ namespace Uploader2 {
 			this->pbPreview->TabStop = false;
 			this->pbPreview->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseClick);
 			this->pbPreview->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseDown);
-			this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
+			//this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 			this->pbPreview->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseUp);
 			// 
 			// bUpdAnalysis
@@ -328,26 +313,6 @@ namespace Uploader2 {
 			this->bNextShot->UseVisualStyleBackColor = true;
 			this->bNextShot->Click += gcnew System::EventHandler(this, &ScoreForm::bNextShot_Click);
 			// 
-			// bNextFrame
-			// 
-			this->bNextFrame->Location = System::Drawing::Point(720, 232);
-			this->bNextFrame->Name = L"bNextFrame";
-			this->bNextFrame->Size = System::Drawing::Size(31, 23);
-			this->bNextFrame->TabIndex = 35;
-			this->bNextFrame->Text = L">>";
-			this->bNextFrame->UseVisualStyleBackColor = true;
-			this->bNextFrame->Click += gcnew System::EventHandler(this, &ScoreForm::bNextFrame_Click);
-			// 
-			// bPrevFrame
-			// 
-			this->bPrevFrame->Location = System::Drawing::Point(677, 232);
-			this->bPrevFrame->Name = L"bPrevFrame";
-			this->bPrevFrame->Size = System::Drawing::Size(31, 23);
-			this->bPrevFrame->TabIndex = 36;
-			this->bPrevFrame->Text = L"<<";
-			this->bPrevFrame->UseVisualStyleBackColor = true;
-			this->bPrevFrame->Click += gcnew System::EventHandler(this, &ScoreForm::bPrevFrame_Click);
-			// 
 			// bPrevShot
 			// 
 			this->bPrevShot->Location = System::Drawing::Point(666, 174);
@@ -393,11 +358,6 @@ namespace Uploader2 {
 			this->bResetPost->UseVisualStyleBackColor = true;
 			this->bResetPost->Click += gcnew System::EventHandler(this, &ScoreForm::bResetPost_Click);
 			// 
-			// timer1
-			// 
-			this->timer1->Interval = 1000;
-			this->timer1->Tick += gcnew System::EventHandler(this, &ScoreForm::timer1_Tick);
-			// 
 			// lWait
 			// 
 			this->lWait->AutoSize = true;
@@ -434,19 +394,49 @@ namespace Uploader2 {
 			this->nudAimRadius->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 5, 0, 0, 0 });
 			this->nudAimRadius->ValueChanged += gcnew System::EventHandler(this, &ScoreForm::nudAimRadius_ValueChanged);
 			// 
+			// lZoom
+			// 
+			this->lZoom->AutoSize = true;
+			this->lZoom->Location = System::Drawing::Point(674, 392);
+			this->lZoom->Name = "lZoom";
+			this->lZoom->Size = System::Drawing::Size(63, 13);
+			this->lZoom->TabIndex = 45;
+			this->lZoom->Text = "Zoom Level";
+			// 
+			// bZoomIn
+			// 
+			this->bZoomIn->Location = System::Drawing::Point(676, 408);
+			this->bZoomIn->Name = "bZoomIn";
+			this->bZoomIn->Size = System::Drawing::Size(42, 23);
+			this->bZoomIn->TabIndex = 46;
+			this->bZoomIn->Text = "In";
+			this->bZoomIn->UseVisualStyleBackColor = true;
+			this->bZoomIn->Click += gcnew System::EventHandler(this, &ScoreForm::bZoomIn_Click);
+			// 
+			// bZoomOut
+			// 
+			this->bZoomOut->Location = System::Drawing::Point(724, 408);
+			this->bZoomOut->Name = "bZoomOut";
+			this->bZoomOut->Size = System::Drawing::Size(42, 23);
+			this->bZoomOut->TabIndex = 47;
+			this->bZoomOut->Text = "Out";
+			this->bZoomOut->UseVisualStyleBackColor = true;
+			this->bZoomOut->Click += gcnew System::EventHandler(this, &ScoreForm::bZoomOut_Click);
+			// 
 			// ScoreForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(988, 576);
+			this->Controls->Add(this->bZoomOut);
+			this->Controls->Add(this->bZoomIn);
+			this->Controls->Add(this->lZoom);
 			this->Controls->Add(this->nudAimRadius);
 			this->Controls->Add(this->lWait);
 			this->Controls->Add(this->bResetPost);
 			this->Controls->Add(this->bIncFS);
 			this->Controls->Add(this->bDecFS);
 			this->Controls->Add(this->bPrevShot);
-			this->Controls->Add(this->bPrevFrame);
-			this->Controls->Add(this->bNextFrame);
 			this->Controls->Add(this->bNextShot);
 			this->Controls->Add(this->bAimPoint);
 			this->Controls->Add(this->bBack);
@@ -458,7 +448,6 @@ namespace Uploader2 {
 			this->Controls->Add(this->bUpdAnalysis);
 			this->Controls->Add(this->pbPreview);
 			this->Controls->Add(this->lvShots);
-			this->Controls->Add(this->bSetWindow);
 			this->Controls->Add(this->lClickPrompt);
 			this->Controls->Add(this->tbHit);
 			this->Controls->Add(this->label3);
@@ -480,40 +469,30 @@ namespace Uploader2 {
 
 	private: void makeControlsInvisible()
 	{
+		lClickPrompt->Text = "";
 		bResetPost->Visible = false;
-		bSetWindow->Visible = false;
 		bUpdAnalysis->Visible = false;
 		bAimPoint->Visible = false;
+		lvShots->Visible = false;
+		pbPreview->Visible = false;
+		lWait->Visible = false;
 		bPlay->Visible = false;
 		bHit->Visible = false;
 		bMiss->Visible = false;
-		bNextFrame->Visible = false;
-		bPrevFrame->Visible = false;
-		bDone->Visible = false;
-		bBack->Visible = false;
-		bManual->Visible = false;
 		bPrevShot->Visible = false;
 		bNextShot->Visible = false;
+		bManual->Visible = false;
+		bBack->Visible = false;
+		bBack->Text = "Back";
+		nudAimRadius->Visible = false;
 		bDecFS->Visible = false;
 		bIncFS->Visible = false;
-		nudAimRadius->Visible = false;
+		lZoom->Visible = false;
+		bZoomIn->Visible = false;
+		bZoomOut->Visible = false;
 		pbTriage->Visible = false;
-
-		lvShots->Visible = false;
-		pbPreview->Visible = false;
+		bDone->Visible = false;
 	}
-
-	private: void setModeNone();
-	private: void setModeViewShot();
-	private: void setModeScore();
-	private: void setModeManual();
-	private: void setModeSetAimpoint();
-	private: void setModeFindTarget();
-
-	private: void Uploader2::ScoreForm::showListWithOriginals();
-
-	private: void updateListShowMoneygetShotsCount();
-	private: void updateListReplaceShot();
 
 	private: System::Void ScoreForm_FormClosed(System::Object^  sender, System::Windows::Forms::FormClosedEventArgs^  e);
 	private: System::Void ScoreForm_Load(System::Object^  sender, System::EventArgs^  e);
@@ -521,7 +500,6 @@ namespace Uploader2 {
 	private: System::Void bBack_Click(System::Object^  sender, System::EventArgs^  e);
 
 	private: System::Void bPlay_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bSetWindow_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void pbPreview_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
 
 	private: System::Void lvShots_ItemChecked(System::Object^  sender, System::Windows::Forms::ItemCheckedEventArgs^  e);
@@ -531,8 +509,6 @@ namespace Uploader2 {
 	private: System::Void bNextShot_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void bPrevShot_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void bManual_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bPrevFrame_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bNextFrame_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void bAimPoint_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void pbPreview_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
 	private: System::Void pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
@@ -544,11 +520,25 @@ namespace Uploader2 {
 	private: System::Void bwVideo_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
 	private: System::Void bwVideo_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
 	private: System::Void bResetPost_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
 	private: System::Void bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
 	private: System::Void bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
 	private: System::Void nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void bZoomIn_Click(System::Object^  sender, System::EventArgs^ e);
+	private: System::Void bZoomOut_Click(System::Object^  sender, System::EventArgs^ e);
+
+	private:
+		void setModeInit();
+		void setModeManual();
+		void setModeNone();
+		void setModeScore();
+		void setModeSetAimpoint();
+		//private: void setModeViewShot();
+		//private: void setModeFindTarget();
+
+		void showListWithOriginals();
+		//void updateListShowMoneygetShotsCount();
+		//void updateListReplaceShot();
 
 	public:
 		Logger^ log;
@@ -560,13 +550,15 @@ namespace Uploader2 {
 
 		Analyzer ^a;
 		ImageList ^imlist;
-		Boolean windowSet;
+		//Boolean windowSet;
 
-		Point mousePt; // location on the image where the user clicked on the target
+		bool mouseDown;
+		bool dragging;
+		Point mouseDownPos; // location on the image where the user clicked on the target
+		Mode mode;
 
 		int selIndex; // index of selected shot
-		int manualIdx; // index of frame within shot
-		int mode;
+		//int manualIdx; // index of frame within shot
 };
 }
 
