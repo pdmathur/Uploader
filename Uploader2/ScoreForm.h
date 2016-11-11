@@ -2,18 +2,7 @@
 #include "../AnalyzerLibrary/AnalyzerLibrary.h"
 #include "AppPrefs.h"
 
-// Modes for the UI
-//#define MODE_INIT -1
-//#define MODE_NONE 0
-//#define MODE_VIEWSHOT 1
-//#define MODE_MANUAL 2
-//#define MODE_AIMPOINT 3
-//#define MODE_FINDTARGET 4
-//#define MODE_SCORE 5
-
 #define MAX_MANUAL_PTS 3
-
-#define AIMRADIUS 20 // ideally 16, but increased for longer ranges
 
 namespace Uploader2 {
 
@@ -98,11 +87,6 @@ namespace Uploader2 {
 	private: System::Windows::Forms::Button^  bZoomOut;
 
 	private: System::ComponentModel::IContainer^  components;
-
-	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -220,7 +204,6 @@ namespace Uploader2 {
 			this->pbPreview->TabStop = false;
 			this->pbPreview->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseClick);
 			this->pbPreview->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseDown);
-			//this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 			this->pbPreview->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseUp);
 			// 
 			// bUpdAnalysis
@@ -494,38 +477,39 @@ namespace Uploader2 {
 		bDone->Visible = false;
 	}
 
-	private: System::Void ScoreForm_FormClosed(System::Object^  sender, System::Windows::Forms::FormClosedEventArgs^  e);
-	private: System::Void ScoreForm_Load(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void lvShots_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bBack_Click(System::Object^  sender, System::EventArgs^  e);
+	private:
+		System::Void ScoreForm_FormClosed(System::Object^  sender, System::Windows::Forms::FormClosedEventArgs^  e);
+		System::Void ScoreForm_Load(System::Object^  sender, System::EventArgs^  e);
+		System::Void lvShots_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bBack_Click(System::Object^  sender, System::EventArgs^  e);
 
-	private: System::Void bPlay_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void pbPreview_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		System::Void bPlay_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void pbPreview_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
 
-	private: System::Void lvShots_ItemChecked(System::Object^  sender, System::Windows::Forms::ItemCheckedEventArgs^  e);
-	private: System::Void bUpdAnalysis_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bHit_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bMiss_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bNextShot_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bPrevShot_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bManual_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bAimPoint_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void pbPreview_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-	private: System::Void pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-	private: System::Void pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-	private: System::Void bDone_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void ScoreForm_Resize(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bDecFS_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bIncFS_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bwVideo_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
-	private: System::Void bwVideo_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
-	private: System::Void bResetPost_Click(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
-	private: System::Void bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
-	private: System::Void bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
-	private: System::Void nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e);
-	private: System::Void bZoomIn_Click(System::Object^  sender, System::EventArgs^ e);
-	private: System::Void bZoomOut_Click(System::Object^  sender, System::EventArgs^ e);
+		System::Void lvShots_ItemChecked(System::Object^  sender, System::Windows::Forms::ItemCheckedEventArgs^  e);
+		System::Void bUpdAnalysis_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bHit_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bMiss_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bNextShot_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bPrevShot_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bManual_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bAimPoint_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void pbPreview_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		System::Void pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		System::Void pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		System::Void bDone_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void ScoreForm_Resize(System::Object^  sender, System::EventArgs^  e);
+		System::Void bDecFS_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bIncFS_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bwVideo_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
+		System::Void bwVideo_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
+		System::Void bResetPost_Click(System::Object^  sender, System::EventArgs^  e);
+		System::Void bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e);
+		System::Void bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e);
+		System::Void bwTriage_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e);
+		System::Void nudAimRadius_ValueChanged(System::Object^  sender, System::EventArgs^  e);
+		System::Void bZoomIn_Click(System::Object^  sender, System::EventArgs^ e);
+		System::Void bZoomOut_Click(System::Object^  sender, System::EventArgs^ e);
 
 	private:
 		void setModeInit();
@@ -533,12 +517,8 @@ namespace Uploader2 {
 		void setModeNone();
 		void setModeScore();
 		void setModeSetAimpoint();
-		//private: void setModeViewShot();
-		//private: void setModeFindTarget();
 
 		void showListWithOriginals();
-		//void updateListShowMoneygetShotsCount();
-		//void updateListReplaceShot();
 
 	public:
 		Logger^ log;
@@ -546,19 +526,16 @@ namespace Uploader2 {
 		AppPrefs^ prefs;
 		String^ folder;
 		String^ rootFolder;
-		String^ viewType;
 
 		Analyzer ^a;
 		ImageList ^imlist;
-		//Boolean windowSet;
 
-		bool mouseDown;
-		bool dragging;
-		Point mouseDownPos; // location on the image where the user clicked on the target
-		Mode mode;
+		int selIndex;       // index of selected shot
+		String^ viewType;   // pre or post trigger shot to be show in thumbnails
+		Mode mode;          // what content is being shown in the window
 
-		int selIndex; // index of selected shot
-		//int manualIdx; // index of frame within shot
+		Point mouseDownPos; // location where mouse button pressed on the pBPreview control
+		bool dragging;      // dragging gesture is/was detected after the last mouse down on the pbPreview control
 };
 }
 

@@ -10,7 +10,6 @@ System::Void Uploader2::ScoreForm::ScoreForm_FormClosed(System::Object^  sender,
 System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, System::EventArgs^  e)
 {
 	this->dragging = false;
-	this->mouseDown = false;
 	this->selIndex = -1;
 	this->rootFolder = Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader";
 	LOGINFO("Score form root folder is " + rootFolder);
@@ -62,10 +61,10 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		else
 		{
 			setModeNone();
-			showListWithOriginals(); 				// Update thumbnails
+			showListWithOriginals(); 				        // Update thumbnails
 			tbHit->Text = a->getHitsCount().ToString();		// Update hits
 			tbShots->Text = a->getShotsCount().ToString();	// Update selected shots
-			nudAimRadius->Value = a->getAimRadius();	// Update aim radius
+			nudAimRadius->Value = a->getAimRadius();	    // Update aim radius
 		}
 	}
 	else {
@@ -108,12 +107,12 @@ System::Void Uploader2::ScoreForm::lvShots_Click(System::Object^  sender, System
 System::Void Uploader2::ScoreForm::bBack_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	LOGINFO("Back button clicked");
-	if (mode == Mode::Manual)
+	if (mode == Mode::Manual) // this mode is two deep, so go back one ...
 	{
 		setModeScore();
 		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // Money shot
 	}
-	else if (mode == Mode::Init)
+	else if (mode == Mode::Init) //  canceling the Triage operation
 	{
 		bwTriage->CancelAsync();
 		bBack->Text = "Wait!";
@@ -121,7 +120,7 @@ System::Void Uploader2::ScoreForm::bBack_Click(System::Object^  sender, System::
 	else
 	{
 		setModeNone();
-		showListWithOriginals();
+		showListWithOriginals(); // Update thumbnails
 	}
 }
 
@@ -212,8 +211,8 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender,
 		a->resetTargetPos(selIndex);
 		a->mapToView(e->Location, pbPreview->Size);
 		a->analyzeShotFromBeginning(true);
-		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
-		tbHit->Text = a->getHitsCount().ToString();
+		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // the frame prior to the shot
+		tbHit->Text = a->getHitsCount().ToString(); // in case hit/miss changed
 	}
 	else if (mode == Mode::Manual)
 	{
@@ -222,7 +221,7 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender,
 	else if (mode == Mode::Aimpoint && !this->dragging)
 	{
 		a->mapToView(e->Location, pbPreview->Size);
-		this->tbHit->Text = a->getHitsCount().ToString();
+		this->tbHit->Text = a->getHitsCount().ToString(); // update hits
 	}
 }
 
@@ -312,7 +311,6 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, 
 	{
 		mouseDownPos = e->Location;
 		this->dragging = false;
-		this->mouseDown = true;
 		this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 	}
 }
@@ -320,16 +318,13 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, 
 System::Void Uploader2::ScoreForm::pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	if (mode == Mode::Aimpoint || mode == Mode::Score)
-	{
 		this->pbPreview->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
-		this->mouseDown = false;
-	}
 }
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	Point point(mouseDownPos.X - e->Location.X, mouseDownPos.Y - e->Location.Y);
-	if (!this->dragging && this->mouseDown)
+	if (!this->dragging)
 	{
 		if (Math::Abs(point.Y) + Math::Abs(point.X) > 5)
 			this->dragging = true;
@@ -337,7 +332,7 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, 
 
 	if (this->mode == Mode::Aimpoint)
 	{
-		if (this->dragging && this->mouseDown)
+		if (this->dragging)
 		{
 			a->adjustWindowTL(point);
 			this->mouseDownPos = e->Location;
@@ -345,7 +340,7 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, 
 		int index = e->Location.X | (e->Location.Y << 16);
 		pbPreview->Image = a->createBM(viewType, index, pbPreview->Size);
 	}
-	else if (this->mode == Mode::Score && this->dragging && this->mouseDown)
+	else if (this->mode == Mode::Score && this->dragging)
 	{
 		a->adjustWindowTL(point);
 		mouseDownPos = e->Location;
@@ -419,14 +414,6 @@ System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, Syste
 			a->setHit(selIndex, false);
 			break;
 		}
-		/*
-		else if (e->nKeyCode == 78)
-		bNextShot->PerformClick();
-		else if (e->nKeyCode == 80)
-		bPrevShot->PerformClick();
-		else if (e->nKeyCode == 66)
-		bBack->PerformClick();
-		*/
 	}
 }
 
@@ -435,9 +422,6 @@ System::Void Uploader2::ScoreForm::bwVideo_RunWorkerCompleted(System::Object^  s
 	LOGINFO("Player finished playing");
 	tbHit->Text = a->getHitsCount().ToString();
 	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
-
-	//tbShots->Text = a->getShotsCount().ToString();
-	//updateListReplaceShot(); // in case hit/miss changed
 }
 
 System::Void Uploader2::ScoreForm::bResetPost_Click(System::Object^  sender, System::EventArgs^  e)
@@ -460,6 +444,9 @@ System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sende
 
 	for (int i = 0; i < a->getVideoCount(); i++)
 	{
+		if (worker->CancellationPending)
+			break;
+
 		a->selectVideo(i); // load video into memory
 		a->setShot(i, a->analyzeShotFromBeginning(false));
 		worker->ReportProgress((int)((double)i * 100.0 / (double)a->getVideoCount() + 0.5));
@@ -472,8 +459,8 @@ System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sende
 System::Void Uploader2::ScoreForm::bwFirstAnalysis_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
 {
 	setModeNone();
-	showListWithOriginals(); // Update thumbnails
-	tbHit->Text = a->getHitsCount().ToString(); // Update hits
+	showListWithOriginals();                       // Update thumbnails
+	tbHit->Text = a->getHitsCount().ToString();    // Update hits
 	tbShots->Text = a->getShotsCount().ToString(); // Update selected shots
 	nudAimRadius->Value = a->getAimRadius();
 }
