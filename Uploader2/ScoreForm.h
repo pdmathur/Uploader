@@ -1,6 +1,7 @@
 #pragma once
 #include "../AnalyzerLibrary/AnalyzerLibrary.h"
 #include "AppPrefs.h"
+#include "Team.h"
 
 #define MAX_MANUAL_PTS 3
 
@@ -21,13 +22,14 @@ namespace Uploader2 {
 	public ref class ScoreForm : public System::Windows::Forms::Form
 	{
 	public:
-		ScoreForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, String ^_folder)
+		ScoreForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, String ^_folder, Team ^team)
 		{
 			InitializeComponent();
 			this->log = _log;
 			this->svc = _svc;
 			this->prefs = prefs;
 			this->folder = _folder;
+			this->team = team;
 			LOGINFO("Scoreform Loaded");
 		}
 
@@ -526,6 +528,7 @@ namespace Uploader2 {
 		AppPrefs^ prefs;
 		String^ folder;
 		String^ rootFolder;
+		Team ^team;
 
 		Analyzer ^a;
 		ImageList ^imlist;
