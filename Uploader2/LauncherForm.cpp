@@ -101,7 +101,7 @@ System::Void Uploader2::LauncherForm::button1_Click(System::Object^  sender, Sys
 	this->Show();
 }
 System::Void Uploader2::LauncherForm::button2_Click(System::Object^  sender, System::EventArgs^  e) {
-	ScoreForm ^sf = gcnew ScoreForm(log, svc, prefs, workfolder);
+	ScoreForm ^sf = gcnew ScoreForm(log, svc, prefs, workfolder, team);
 	this->Hide();
 	sf->ShowDialog();
 	this->Show();
