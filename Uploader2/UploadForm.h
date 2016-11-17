@@ -217,15 +217,7 @@ namespace Uploader2 {
 		String ^uid = nluser[0][cbPlayer->SelectedIndex];
 		String ^desc = tbDesc->Text;
 
-		Point tl;
-		for (int i = 0; i < a->getVideoCount(); i++)
-		{
-			if (a->isShot(i))
-			{
-				tl = a->tl(i);
-				break;
-			}
-		}
+		Point tl(0,0);
 		Drawing::Size es = a->getExportSize();
 		LOGINFO("Upload: set top-left reference to " + tl.X + ", " + tl.Y);
 		evId = svc->createEvent4(fieldid, uid, desc,
@@ -312,7 +304,7 @@ namespace Uploader2 {
 					array<Drawing::Point>^tp;
 					array<double>^tm;
 
-					a->exportMetrics(i, gp, tp, tm, Drawing::Point(ww.X, ww.Y));
+					a->exportMetrics(i, gp, tp, tm, Drawing::Point(a->getExportSize().Width / 2, a->getExportSize().Height / 2));
 
 					svc->createEventScoreGunNTgtPosition(esId, gp, tp, tm, msg);
 					if (msg->Length > 0)
