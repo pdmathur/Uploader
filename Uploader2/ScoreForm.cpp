@@ -355,7 +355,7 @@ System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::
 		MessageBox::Show("Aim Point is not set.  Go to jail.  Do not collect pay.  Skip three turns or roll a six.");
 	else
 	{
-		UploadForm uf(log, svc, a);
+		UploadForm uf(log, svc, a, this->team);
 		uf.ShowDialog();
 	}
 }

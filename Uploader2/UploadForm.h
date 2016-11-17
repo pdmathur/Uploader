@@ -21,12 +21,13 @@ namespace Uploader2 {
 	public ref class UploadForm : public System::Windows::Forms::Form
 	{
 	public:
-		UploadForm(Logger ^_log, Services ^_svc, Analyzer ^_a)
+		UploadForm(Logger ^_log, Services ^_svc, Analyzer ^_a, Team ^team)
 		{
 			InitializeComponent();
 			this->a = _a;
 			this->log = _log;
 			this->svc = _svc;
+			this->team = team;
 			LOGINFO("Created Upload Form");
 		}
 
@@ -181,6 +182,7 @@ namespace Uploader2 {
 		Logger ^log;
 		Analyzer ^a;
 		Services ^svc;
+		Team ^team;
 
 		array<array<String ^> ^> ^nluser;
 		array<array<String ^> ^> ^nlvenue;
@@ -226,9 +228,9 @@ namespace Uploader2 {
 		}
 		Drawing::Size es = a->getExportSize();
 		LOGINFO("Upload: set top-left reference to " + tl.X + ", " + tl.Y);
-		evId = svc->createEvent3(fieldid, uid, desc,
+		evId = svc->createEvent4(fieldid, uid, desc,
 			Point(a->getAimPoint().X - tl.X - es.Width / 2, a->getAimPoint().Y - tl.Y - es.Height / 2),
-			a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate());
+			a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate(), team->id());
 
 		LOGINFO("Event id from server is: " + evId);
 
@@ -335,7 +337,7 @@ namespace Uploader2 {
 	private: System::Void UploadForm_Load(System::Object^  sender, System::EventArgs^  e) {
 		tbDesc->Text = a->getDescription(); // preload the description
 		String ^msg;
-		nluser = svc->getListofAllUsers(msg);
+		nluser = svc->getListofAllUsers2(team->id(), msg);
 		if (msg->Length > 0)
 		{
 			MessageBox::Show(msg);
