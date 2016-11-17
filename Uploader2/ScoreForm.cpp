@@ -10,6 +10,7 @@ System::Void Uploader2::ScoreForm::ScoreForm_FormClosed(System::Object^  sender,
 System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, System::EventArgs^  e)
 {
 	this->dragging = false;
+	this->mouseDown = false;
 	this->selIndex = -1;
 	this->rootFolder = Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader";
 	LOGINFO("Score form root folder is " + rootFolder);
@@ -311,28 +312,27 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, 
 	{
 		mouseDownPos = e->Location;
 		this->dragging = false;
-		this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
+		mouseDown = true;
+		//this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 	}
 }
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	if (mode == Mode::Aimpoint || mode == Mode::Score)
-		this->pbPreview->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
+		mouseDown = false;
+	//this->pbPreview->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 }
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	Point point(mouseDownPos.X - e->Location.X, mouseDownPos.Y - e->Location.Y);
-	if (!this->dragging)
-	{
-		if (Math::Abs(point.Y) + Math::Abs(point.X) > 5)
-			this->dragging = true;
-	}
+	if (!dragging && mouseDown && Math::Abs(point.Y) + Math::Abs(point.X) > 5)
+		this->dragging = true;
 
 	if (this->mode == Mode::Aimpoint)
 	{
-		if (this->dragging)
+		if (this->dragging && this->mouseDown)
 		{
 			a->adjustWindowTL(point);
 			this->mouseDownPos = e->Location;
@@ -340,7 +340,7 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, 
 		int index = e->Location.X | (e->Location.Y << 16);
 		pbPreview->Image = a->createBM(viewType, index, pbPreview->Size);
 	}
-	else if (this->mode == Mode::Score && this->dragging)
+	else if (this->mode == Mode::Score && this->dragging && this->mouseDown)
 	{
 		a->adjustWindowTL(point);
 		mouseDownPos = e->Location;

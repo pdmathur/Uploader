@@ -205,6 +205,7 @@ namespace Uploader2 {
 			this->pbPreview->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseClick);
 			this->pbPreview->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseDown);
 			this->pbPreview->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseUp);
+			this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 			// 
 			// bUpdAnalysis
 			// 
@@ -536,6 +537,7 @@ namespace Uploader2 {
 
 		Point mouseDownPos; // location where mouse button pressed on the pBPreview control
 		bool dragging;      // dragging gesture is/was detected after the last mouse down on the pbPreview control
+		bool mouseDown;     // between mouse down and mouse up events
 };
 }
 
