@@ -2,7 +2,7 @@
 
 Uploader2::AppPrefs::AppPrefs()
 	: _props(gcnew Dictionary<String^, String^>())
-	, _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\prefs.txt")
+	, _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\prefs.txt")
 	, _localMode(false)
 	, _showBanner(true)
 	, _checkForUpdates(false)

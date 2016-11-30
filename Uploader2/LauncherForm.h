@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION "ul-5-75"
+#define VERSION "ul-5-86"
 
 #include "ImportForm.h"
 #include "ScoreForm.h"
