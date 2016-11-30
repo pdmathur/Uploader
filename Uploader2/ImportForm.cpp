@@ -227,7 +227,8 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 		worker->ReportProgress((int)(0.5 + 100.0 * i / lvi->Length), "Triaging ...");
 
 		DateTime ^dt;
-		imp->extractAudio((String ^)lvi->GetValue(i), dt, msg);
+		List<unsigned int> ^cues = gcnew List<unsigned int>;
+		imp->extractAudio((String ^)lvi->GetValue(i), dt, msg, cues);
 		if (msg->Length > 0)
 		{
 			MessageBox::Show(msg);

@@ -3,7 +3,7 @@
 using namespace System::IO;
 
 Uploader2::UsernameCache::UsernameCache()
-	: _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\form-data.txt")
+	: _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\form-data.txt")
 {
 }
 
