@@ -54,6 +54,10 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		//a->setAimPoint();
 		//a->setAimRadius();
 
+		//int margins = 50; // force a 50 px offset from each side
+		//Drawing::Size videoSize = a->getVideoSize();
+		//a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - (2 * margins), videoSize.Height - (2 * margins)));
+
 		if (!a->isSavedDataDirty()) // we should process this roll, the anlyzer has not been used on it
 		{
 			this->setModeInit();
@@ -437,10 +441,6 @@ System::Void Uploader2::ScoreForm::bResetPost_Click(System::Object^  sender, Sys
 System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
-
-	int margins = 50; // force a 50 px offset from each side
-	Drawing::Size videoSize = a->getVideoSize();
-	a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - (2 * margins), videoSize.Height - (2 * margins)));
 
 	for (int i = 0; i < a->getVideoCount(); i++)
 	{
