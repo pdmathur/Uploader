@@ -179,6 +179,9 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	if (prefs->gamma() != nullptr)
 		imp->setGamma(*prefs->gamma());
 
+	Drawing::Point p;
+	double fps;
+
 	// Do a quick check of the file formats prior to copy
 	for (int i = 0; i < lvi->Length; i++)
 	{
@@ -191,7 +194,13 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 		{
 			worker->ReportProgress((int)(0.5 + 100.0 * i / lvi->Length), "Checking");
 			String ^msg;
-			imp->checkSourceVideoHasValidFormat((String ^)lvi->GetValue(i), msg);
+			imp->checkSourceVideoHasValidFormat((String ^)lvi->GetValue(i), &fps, msg);
+			if (msg->Length > 0)
+			{
+				MessageBox::Show(msg);
+				return;
+			}
+			imp->findAimPoint((String ^)lvi->GetValue(i), 15, &p, msg);
 			if (msg->Length > 0)
 			{
 				MessageBox::Show(msg);
@@ -203,8 +212,17 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	// Index the files ...
 	String ^manifest = folder + "\\manifest.txt";
 	StreamWriter ^file = gcnew StreamWriter(manifest);
+	Drawing::Rectangle exportRect(EXPORTRECT);
 	try {
 		file->WriteLine("desc:" + tbDesc->Text);
+		file->WriteLine("aimpoint:" + (p.X - exportRect.X) + "," + (p.Y - exportRect.Y));
+		file->WriteLine("fps:" + fps);
+
+		unsigned int priorFrames, postFrames;
+		imp->getImportedFrameCount(&priorFrames, &postFrames);  // total = 1 + prior + post.
+		file->WriteLine("preframes:" + priorFrames);
+		file->WriteLine("postframes:" + postFrames);
+		file->Flush();
 	}
 	catch (Exception ^e)
 	{
@@ -238,7 +256,7 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 			file->WriteLine("created:" + dt->ToString("u")); // write to file in Universal format
 
 		worker->ReportProgress((int)(0.5 + 100.0 * i / lvi->Length), "Indexing ...");
-		imp->indexAndUpload2(svc, (String ^)lvi->GetValue(i), Drawing::Rectangle(EXPORTRECT), Drawing::Rectangle(MOTIONRECT),
+		imp->indexAndUpload2(svc, (String ^)lvi->GetValue(i), exportRect, Drawing::Rectangle(MOTIONRECT),
 			i, uploadCountLimit, &nitems,
 			file, folder, did,
 			worker, e, &forceDone, msg);
