@@ -84,7 +84,7 @@ namespace Uploader2 {
 			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
 			this->Name = L"Banner";
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
-			this->Text = L"Trifecta Shot Systems Uploader (version 5)";
+			this->Text = L"Trifecta Shot Systems Uploader (version 6)";
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
 			this->ResumeLayout(false);
 
