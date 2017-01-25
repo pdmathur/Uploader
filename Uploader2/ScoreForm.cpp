@@ -58,6 +58,9 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		//Drawing::Size videoSize = a->getVideoSize();
 		//a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - (2 * margins), videoSize.Height - (2 * margins)));
 
+		tbDrawStart->Maximum = 100;
+		tbDrawEnd->Maximum = 100;
+
 		if (!a->isSavedDataDirty()) // we should process this roll, the anlyzer has not been used on it
 		{
 			this->setModeInit();
@@ -149,7 +152,17 @@ void Uploader2::ScoreForm::setModeManual()
 	viewType = "pre";
 	bBack->Visible = true;
 	pbPreview->Visible = true;
+	tbManMsg->Visible = true;
+	tbDrawEnd->Visible = true;
+	tbDrawStart->Visible = true;
+	lDrawStart->Visible = true;
+	lDrawEnd->Visible = true;
+	tbDrawEnd->Value = 100;
+	tbDrawStart->Value = 0;
 	lClickPrompt->Text = "Select 3 points on the line.  Wait ~10s after that";
+	chXY->Visible = true;
+	chXY->Series->Clear();
+	bUndo->Visible = true;
 }
 
 void Uploader2::ScoreForm::setModeNone()
@@ -182,6 +195,7 @@ void Uploader2::ScoreForm::setModeScore()
 	lZoom->Visible = true;
 	bZoomIn->Visible = true;
 	bZoomOut->Visible = true;
+	tbManMsg->Visible = true;
 	viewType = "pre";
 	lClickPrompt->Text = "You can scroll the viewpoint by dragging the mouse";
 }
@@ -215,13 +229,16 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender,
 	{
 		a->resetTargetPos(selIndex);
 		a->mapToView(e->Location, pbPreview->Size);
-		a->analyzeShotFromBeginning(true);
+		//a->analyzeShotFromBeginning(true, false);
+		a->analyzeShotFromEnd(true, false);
 		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // the frame prior to the shot
 		tbHit->Text = a->getHitsCount().ToString(); // in case hit/miss changed
 	}
 	else if (mode == Mode::Manual)
 	{
-		pbPreview->Image = a->registerClickOnDiffBM(e->Location, pbPreview->Size);
+		a->registerClickOnDiffBM(e->Location, PXYS);
+		ReplotChart();
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
 	}
 	else if (mode == Mode::Aimpoint && !this->dragging)
 	{
@@ -294,12 +311,48 @@ System::Void Uploader2::ScoreForm::bPrevShot_Click(System::Object^  sender, Syst
 	System::Windows::Forms::MessageBox::Show("No more shots identified by check marks previous to this one.");
 }
 
+void Uploader2::ScoreForm::ReplotChart()
+{
+	unsigned int t1;
+	unsigned int t2;
+	if (PXY != nullptr)
+	{
+		t1 = (tbDrawStart->Value * PXY->Length) / 100;
+		t2 = (tbDrawEnd->Value * PXY->Length) / 100;
+		// Draw the brightest points
+		chXY->Series->Clear();
+		chXY->Series->Add("X");
+		chXY->Series["X"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
+		for (unsigned int i = t1; i < t2; i++)
+			chXY->Series["X"]->Points->AddXY(i, PXY[i].X);
+		chXY->Series->Add("Y");
+		chXY->Series["Y"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
+		for (unsigned int i = t1; i < t2; i++)
+			chXY->Series["Y"]->Points->AddXY(i, PXY[i].Y);
+	}
+
+	if (PXYS != nullptr)
+	{
+		chXY->Series->Add("XS");
+		chXY->Series["XS"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
+		for (unsigned int i = 0; i < PXYS->Length; i++)
+			chXY->Series["XS"]->Points->AddXY(i, PXYS[i].X);
+		chXY->Series->Add("YS");
+		chXY->Series["YS"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
+		for (unsigned int i = 0; i < PXYS->Length; i++)
+			chXY->Series["YS"]->Points->AddXY(i, PXYS[i].Y);
+	}
+}
+
 System::Void Uploader2::ScoreForm::bManual_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	LOGINFO("Manual mode invoked for frame #" + selIndex);
 	setModeManual();
 	a->resetTargetPos(selIndex);
-	pbPreview->Image = a->initDiffBM(pbPreview->Size, MAX_MANUAL_PTS);
+	a->initDiffBM(PXY, pbPreview->Size); // will create diff BM, populate 1st two points on it based on manual click, if present
+	PXYS = nullptr;
+	ReplotChart();
+	pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
 }
 
 System::Void Uploader2::ScoreForm::bAimPoint_Click(System::Object^  sender, System::EventArgs^  e)
@@ -350,6 +403,42 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, 
 		mouseDownPos = e->Location;
 		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
 	}
+	else if (this->mode == Mode::Manual || this->mode == Mode::Score)
+	{
+		tbManMsg->Text = a->getColorDataString(e->Location, pbPreview->Size);
+
+		// Update little zoom window
+		if (pbZoom->Visible == false)
+			pbZoom->Visible = true;
+		Bitmap ^b = a->createBM(viewType, selIndex, Drawing::Size(a->getExportSize().Width, a->getExportSize().Height));
+		Drawing::Point mLoc((int)(0.5+(double)e->Location.X / pbPreview->Size.Width * a->getExportSize().Width),
+			(int)(0.5+(double)e->Location.Y / pbPreview->Size.Height * a->getExportSize().Height));
+		try
+		{
+			// cut and 2x rescale
+			Rectangle R(mLoc.X - pbZoom->Size.Width / 4, mLoc.Y - pbZoom->Size.Height / 4, pbZoom->Size.Width / 2, pbZoom->Size.Height / 2);
+			Bitmap ^b2 = gcnew Bitmap(b->Clone(R, b->PixelFormat), pbZoom->Size);
+
+			for (int i=-3; i<=3; i++)
+				b2->SetPixel(pbZoom->Size.Width / 2 + i, pbZoom->Size.Height / 2, Color::Black);
+			for (int i = -3; i <= 3; i++)
+				b2->SetPixel(pbZoom->Size.Width / 2, pbZoom->Size.Height / 2 + i, Color::Black);
+			pbZoom->Image = b2;
+		}
+		catch (Exception ^)
+		{
+			// Ignore ... range exception when the mouse moves too fast
+		}
+
+		// Draw tentative hover points
+		if (this->mode == Mode::Manual && PXYS != nullptr)
+		{
+			a->registerClickOnDiffBM(e->Location, PXYS);
+			pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+			ReplotChart();
+			a->undoRegisteredClick(PXYS);
+		}
+	}
 }
 
 System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::EventArgs^  e)
@@ -387,7 +476,7 @@ System::Void Uploader2::ScoreForm::bwVideo_DoWork(System::Object^  sender, Syste
 {
 	BackgroundWorker ^worker = (BackgroundWorker ^)sender;
 
-	if (!a->loadVideoForPlayBack(selIndex, 40, 90))
+	if (!a->loadVideoForPlayBack(selIndex, 20, 30))
 	{
 		MessageBox::Show("Error has occured in playing back video");
 		return;
@@ -448,8 +537,8 @@ System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sende
 			break;
 
 		a->selectVideo(i); // load video into memory
-		a->setShot(i, a->analyzeShotFromBeginning(false));
-		worker->ReportProgress((int)((double)i * 100.0 / (double)a->getVideoCount() + 0.5));
+		a->setShot(i, a->analyzeShotFromBeginning(false, false));
+		worker->ReportProgress((int)(i * 100.0 / a->getVideoCount() + 0.5));
 		a->saveAnalysisData(); // do after a complete run is done
 	}
 
@@ -485,4 +574,19 @@ System::Void Uploader2::ScoreForm::bZoomOut_Click(System::Object^  sender, Syste
 {
 	a->ZoomOut();
 	pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size);
+}
+
+System::Void Uploader2::ScoreForm::bUndo_Click(System::Object^  sender, System::EventArgs^  e) {
+	a->undoRegisteredClick(PXYS);
+	ReplotChart();
+	pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+}
+
+System::Void Uploader2::ScoreForm::pbPreview_MouseLeave(System::Object^  sender, System::EventArgs^  e)
+{
+	if (mode == Mode::Manual)
+	{
+		ReplotChart();
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+	}
 }

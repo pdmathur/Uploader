@@ -215,7 +215,10 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	Drawing::Rectangle exportRect(EXPORTRECT);
 	try {
 		file->WriteLine("desc:" + tbDesc->Text);
-		file->WriteLine("aimpoint:" + (p.X - exportRect.X) + "," + (p.Y - exportRect.Y));
+		if (p.X == -1 || p.Y == -1)
+			file->WriteLine("aimpoint:-1,-1");
+		else
+			file->WriteLine("aimpoint:" + (p.X - exportRect.X) + "," + (p.Y - exportRect.Y));
 		file->WriteLine("fps:" + fps);
 
 		unsigned int priorFrames, postFrames;

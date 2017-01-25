@@ -62,7 +62,7 @@ namespace Uploader2 {
 
 	private: System::Windows::Forms::Label^  lClickPrompt;
 
-	private: System::Windows::Forms::ListView^  lvShots;
+
 	private: System::Windows::Forms::PictureBox^  pbPreview;
 	private: System::Windows::Forms::Button^  bUpdAnalysis;
 	private: System::Windows::Forms::Button^  bDone;
@@ -76,17 +76,41 @@ namespace Uploader2 {
 	private: System::Windows::Forms::Button^  bAimPoint;
 	private: System::Windows::Forms::Button^  bNextShot;
 	private: System::Windows::Forms::Button^  bPrevShot;
-	private: System::Windows::Forms::Button^  bDecFS;
-	private: System::Windows::Forms::Button^  bIncFS;
+
+
 	private: System::ComponentModel::BackgroundWorker^  bwVideo;
 	private: System::Windows::Forms::Button^  bResetPost;
 	private: System::Windows::Forms::Label^  lWait;
 	private: System::ComponentModel::BackgroundWorker^  bwTriage;
 	private: System::Windows::Forms::ProgressBar^  pbTriage;
-	private: System::Windows::Forms::NumericUpDown^  nudAimRadius;
+
 	private: System::Windows::Forms::Label^  lZoom;
 	private: System::Windows::Forms::Button^  bZoomIn;
 	private: System::Windows::Forms::Button^  bZoomOut;
+	private: System::Windows::Forms::ListView^  lvShots;
+	private: System::Windows::Forms::TextBox^  tbManMsg;
+	private: System::Windows::Forms::PictureBox^  pbZoom;
+
+
+
+	private: System::Windows::Forms::TrackBar^  tbDrawStart;
+	private: System::Windows::Forms::TrackBar^  tbDrawEnd;
+	private: System::Windows::Forms::Label^  lDrawStart;
+	private: System::Windows::Forms::Label^  lDrawEnd;
+	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chXY;
+	private: System::Windows::Forms::NumericUpDown^  nudAimRadius;
+	private: System::Windows::Forms::Button^  bUndo;
+
+
+
+
+
+
+
+
+
+
+
 
 	private: System::ComponentModel::IContainer^  components;
 
@@ -97,13 +121,14 @@ namespace Uploader2 {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->components = (gcnew System::ComponentModel::Container());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->tbShots = (gcnew System::Windows::Forms::TextBox());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->tbHit = (gcnew System::Windows::Forms::TextBox());
 			this->lClickPrompt = (gcnew System::Windows::Forms::Label());
-			this->lvShots = (gcnew System::Windows::Forms::ListView());
 			this->pbPreview = (gcnew System::Windows::Forms::PictureBox());
 			this->bUpdAnalysis = (gcnew System::Windows::Forms::Button());
 			this->bDone = (gcnew System::Windows::Forms::Button());
@@ -116,18 +141,29 @@ namespace Uploader2 {
 			this->bAimPoint = (gcnew System::Windows::Forms::Button());
 			this->bNextShot = (gcnew System::Windows::Forms::Button());
 			this->bPrevShot = (gcnew System::Windows::Forms::Button());
-			this->bDecFS = (gcnew System::Windows::Forms::Button());
-			this->bIncFS = (gcnew System::Windows::Forms::Button());
 			this->bwVideo = (gcnew System::ComponentModel::BackgroundWorker());
 			this->bResetPost = (gcnew System::Windows::Forms::Button());
 			this->lWait = (gcnew System::Windows::Forms::Label());
 			this->bwTriage = (gcnew System::ComponentModel::BackgroundWorker());
 			this->pbTriage = (gcnew System::Windows::Forms::ProgressBar());
-			this->nudAimRadius = (gcnew System::Windows::Forms::NumericUpDown());
 			this->lZoom = (gcnew System::Windows::Forms::Label());
 			this->bZoomIn = (gcnew System::Windows::Forms::Button());
 			this->bZoomOut = (gcnew System::Windows::Forms::Button());
+			this->lvShots = (gcnew System::Windows::Forms::ListView());
+			this->tbManMsg = (gcnew System::Windows::Forms::TextBox());
+			this->pbZoom = (gcnew System::Windows::Forms::PictureBox());
+			this->tbDrawStart = (gcnew System::Windows::Forms::TrackBar());
+			this->tbDrawEnd = (gcnew System::Windows::Forms::TrackBar());
+			this->lDrawStart = (gcnew System::Windows::Forms::Label());
+			this->lDrawEnd = (gcnew System::Windows::Forms::Label());
+			this->chXY = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
+			this->nudAimRadius = (gcnew System::Windows::Forms::NumericUpDown());
+			this->bUndo = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbPreview))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbZoom))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawStart))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawEnd))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chXY))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudAimRadius))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -186,17 +222,6 @@ namespace Uploader2 {
 			this->lClickPrompt->TabIndex = 13;
 			this->lClickPrompt->Text = L"Select the frames that contain shots.  Then press Set Window";
 			// 
-			// lvShots
-			// 
-			this->lvShots->CheckBoxes = true;
-			this->lvShots->Location = System::Drawing::Point(12, 48);
-			this->lvShots->Name = L"lvShots";
-			this->lvShots->Size = System::Drawing::Size(973, 480);
-			this->lvShots->TabIndex = 21;
-			this->lvShots->UseCompatibleStateImageBehavior = false;
-			this->lvShots->ItemChecked += gcnew System::Windows::Forms::ItemCheckedEventHandler(this, &ScoreForm::lvShots_ItemChecked);
-			this->lvShots->Click += gcnew System::EventHandler(this, &ScoreForm::lvShots_Click);
-			// 
 			// pbPreview
 			// 
 			this->pbPreview->Location = System::Drawing::Point(12, 48);
@@ -206,8 +231,9 @@ namespace Uploader2 {
 			this->pbPreview->TabStop = false;
 			this->pbPreview->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseClick);
 			this->pbPreview->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseDown);
-			this->pbPreview->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseUp);
+			this->pbPreview->MouseLeave += gcnew System::EventHandler(this, &ScoreForm::pbPreview_MouseLeave);
 			this->pbPreview->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
+			this->pbPreview->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseUp);
 			// 
 			// bUpdAnalysis
 			// 
@@ -271,7 +297,7 @@ namespace Uploader2 {
 			// 
 			// bBack
 			// 
-			this->bBack->Location = System::Drawing::Point(676, 277);
+			this->bBack->Location = System::Drawing::Point(676, 232);
 			this->bBack->Name = L"bBack";
 			this->bBack->Size = System::Drawing::Size(75, 23);
 			this->bBack->TabIndex = 29;
@@ -309,26 +335,6 @@ namespace Uploader2 {
 			this->bPrevShot->UseVisualStyleBackColor = true;
 			this->bPrevShot->Click += gcnew System::EventHandler(this, &ScoreForm::bPrevShot_Click);
 			// 
-			// bDecFS
-			// 
-			this->bDecFS->Location = System::Drawing::Point(677, 340);
-			this->bDecFS->Name = L"bDecFS";
-			this->bDecFS->Size = System::Drawing::Size(31, 23);
-			this->bDecFS->TabIndex = 38;
-			this->bDecFS->Text = L"-";
-			this->bDecFS->UseVisualStyleBackColor = true;
-			this->bDecFS->Click += gcnew System::EventHandler(this, &ScoreForm::bDecFS_Click);
-			// 
-			// bIncFS
-			// 
-			this->bIncFS->Location = System::Drawing::Point(720, 340);
-			this->bIncFS->Name = L"bIncFS";
-			this->bIncFS->Size = System::Drawing::Size(31, 23);
-			this->bIncFS->TabIndex = 39;
-			this->bIncFS->Text = L"+";
-			this->bIncFS->UseVisualStyleBackColor = true;
-			this->bIncFS->Click += gcnew System::EventHandler(this, &ScoreForm::bIncFS_Click);
-			// 
 			// bwVideo
 			// 
 			this->bwVideo->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ScoreForm::bwVideo_DoWork);
@@ -359,6 +365,7 @@ namespace Uploader2 {
 			// bwTriage
 			// 
 			this->bwTriage->WorkerReportsProgress = true;
+			this->bwTriage->WorkerSupportsCancellation = true;
 			this->bwTriage->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ScoreForm::bwFirstAnalysis_DoWork);
 			this->bwTriage->ProgressChanged += gcnew System::ComponentModel::ProgressChangedEventHandler(this, &ScoreForm::bwTriage_ProgressChanged);
 			this->bwTriage->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ScoreForm::bwFirstAnalysis_RunWorkerCompleted);
@@ -370,58 +377,149 @@ namespace Uploader2 {
 			this->pbTriage->Size = System::Drawing::Size(409, 23);
 			this->pbTriage->TabIndex = 42;
 			// 
-			// nudAimRadius
-			// 
-			this->nudAimRadius->Location = System::Drawing::Point(677, 314);
-			this->nudAimRadius->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 5, 0, 0, 0 });
-			this->nudAimRadius->Name = L"nudAimRadius";
-			this->nudAimRadius->Size = System::Drawing::Size(74, 20);
-			this->nudAimRadius->TabIndex = 43;
-			this->nudAimRadius->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 5, 0, 0, 0 });
-			this->nudAimRadius->ValueChanged += gcnew System::EventHandler(this, &ScoreForm::nudAimRadius_ValueChanged);
-			// 
 			// lZoom
 			// 
 			this->lZoom->AutoSize = true;
-			this->lZoom->Location = System::Drawing::Point(674, 392);
-			this->lZoom->Name = "lZoom";
+			this->lZoom->Location = System::Drawing::Point(770, 216);
+			this->lZoom->Name = L"lZoom";
 			this->lZoom->Size = System::Drawing::Size(63, 13);
 			this->lZoom->TabIndex = 45;
-			this->lZoom->Text = "Zoom Level";
+			this->lZoom->Text = L"Zoom Level";
 			// 
 			// bZoomIn
 			// 
-			this->bZoomIn->Location = System::Drawing::Point(676, 408);
-			this->bZoomIn->Name = "bZoomIn";
+			this->bZoomIn->Location = System::Drawing::Point(772, 232);
+			this->bZoomIn->Name = L"bZoomIn";
 			this->bZoomIn->Size = System::Drawing::Size(42, 23);
 			this->bZoomIn->TabIndex = 46;
-			this->bZoomIn->Text = "In";
+			this->bZoomIn->Text = L"In";
 			this->bZoomIn->UseVisualStyleBackColor = true;
 			this->bZoomIn->Click += gcnew System::EventHandler(this, &ScoreForm::bZoomIn_Click);
 			// 
 			// bZoomOut
 			// 
-			this->bZoomOut->Location = System::Drawing::Point(724, 408);
-			this->bZoomOut->Name = "bZoomOut";
+			this->bZoomOut->Location = System::Drawing::Point(820, 232);
+			this->bZoomOut->Name = L"bZoomOut";
 			this->bZoomOut->Size = System::Drawing::Size(42, 23);
 			this->bZoomOut->TabIndex = 47;
-			this->bZoomOut->Text = "Out";
+			this->bZoomOut->Text = L"Out";
 			this->bZoomOut->UseVisualStyleBackColor = true;
 			this->bZoomOut->Click += gcnew System::EventHandler(this, &ScoreForm::bZoomOut_Click);
+			// 
+			// lvShots
+			// 
+			this->lvShots->CheckBoxes = true;
+			this->lvShots->Location = System::Drawing::Point(12, 48);
+			this->lvShots->Name = L"lvShots";
+			this->lvShots->Size = System::Drawing::Size(973, 480);
+			this->lvShots->TabIndex = 21;
+			this->lvShots->UseCompatibleStateImageBehavior = false;
+			this->lvShots->ItemChecked += gcnew System::Windows::Forms::ItemCheckedEventHandler(this, &ScoreForm::lvShots_ItemChecked);
+			this->lvShots->Click += gcnew System::EventHandler(this, &ScoreForm::lvShots_Click);
+			// 
+			// tbManMsg
+			// 
+			this->tbManMsg->Location = System::Drawing::Point(676, 449);
+			this->tbManMsg->Multiline = true;
+			this->tbManMsg->Name = L"tbManMsg";
+			this->tbManMsg->Size = System::Drawing::Size(238, 65);
+			this->tbManMsg->TabIndex = 56;
+			// 
+			// pbZoom
+			// 
+			this->pbZoom->Location = System::Drawing::Point(12, 48);
+			this->pbZoom->Name = L"pbZoom";
+			this->pbZoom->Size = System::Drawing::Size(96, 96);
+			this->pbZoom->TabIndex = 57;
+			this->pbZoom->TabStop = false;
+			// 
+			// tbDrawStart
+			// 
+			this->tbDrawStart->Location = System::Drawing::Point(676, 91);
+			this->tbDrawStart->Name = L"tbDrawStart";
+			this->tbDrawStart->Size = System::Drawing::Size(299, 42);
+			this->tbDrawStart->TabIndex = 61;
+			this->tbDrawStart->Scroll += gcnew System::EventHandler(this, &ScoreForm::tbDrawStart_Scroll);
+			// 
+			// tbDrawEnd
+			// 
+			this->tbDrawEnd->Location = System::Drawing::Point(677, 171);
+			this->tbDrawEnd->Name = L"tbDrawEnd";
+			this->tbDrawEnd->Size = System::Drawing::Size(299, 42);
+			this->tbDrawEnd->TabIndex = 62;
+			this->tbDrawEnd->Scroll += gcnew System::EventHandler(this, &ScoreForm::tbDrawEnd_Scroll);
+			// 
+			// lDrawStart
+			// 
+			this->lDrawStart->AutoSize = true;
+			this->lDrawStart->Location = System::Drawing::Point(679, 74);
+			this->lDrawStart->Name = L"lDrawStart";
+			this->lDrawStart->Size = System::Drawing::Size(29, 13);
+			this->lDrawStart->TabIndex = 63;
+			this->lDrawStart->Text = L"Start";
+			// 
+			// lDrawEnd
+			// 
+			this->lDrawEnd->AutoSize = true;
+			this->lDrawEnd->Location = System::Drawing::Point(677, 155);
+			this->lDrawEnd->Name = L"lDrawEnd";
+			this->lDrawEnd->Size = System::Drawing::Size(26, 13);
+			this->lDrawEnd->TabIndex = 64;
+			this->lDrawEnd->Text = L"End";
+			// 
+			// chXY
+			// 
+			chartArea1->Name = L"ChartArea1";
+			this->chXY->ChartAreas->Add(chartArea1);
+			legend1->Name = L"Legend1";
+			this->chXY->Legends->Add(legend1);
+			this->chXY->Location = System::Drawing::Point(680, 261);
+			this->chXY->Name = L"chXY";
+			series1->ChartArea = L"ChartArea1";
+			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::Point;
+			series1->Legend = L"Legend1";
+			series1->Name = L"Series1";
+			this->chXY->Series->Add(series1);
+			this->chXY->Size = System::Drawing::Size(296, 182);
+			this->chXY->TabIndex = 66;
+			this->chXY->Text = L"X-Y Values";
+			// 
+			// nudAimRadius
+			// 
+			this->nudAimRadius->Location = System::Drawing::Point(773, 177);
+			this->nudAimRadius->Name = L"nudAimRadius";
+			this->nudAimRadius->Size = System::Drawing::Size(61, 20);
+			this->nudAimRadius->TabIndex = 67;
+			// 
+			// bUndo
+			// 
+			this->bUndo->Location = System::Drawing::Point(887, 231);
+			this->bUndo->Name = L"bUndo";
+			this->bUndo->Size = System::Drawing::Size(42, 23);
+			this->bUndo->TabIndex = 68;
+			this->bUndo->Text = L"Undo";
+			this->bUndo->UseVisualStyleBackColor = true;
+			this->bUndo->Click += gcnew System::EventHandler(this, &ScoreForm::bUndo_Click);
 			// 
 			// ScoreForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(988, 576);
+			this->Controls->Add(this->bUndo);
+			this->Controls->Add(this->nudAimRadius);
+			this->Controls->Add(this->chXY);
+			this->Controls->Add(this->lDrawEnd);
+			this->Controls->Add(this->lDrawStart);
+			this->Controls->Add(this->tbDrawEnd);
+			this->Controls->Add(this->tbDrawStart);
+			this->Controls->Add(this->pbZoom);
+			this->Controls->Add(this->tbManMsg);
 			this->Controls->Add(this->bZoomOut);
 			this->Controls->Add(this->bZoomIn);
 			this->Controls->Add(this->lZoom);
-			this->Controls->Add(this->nudAimRadius);
 			this->Controls->Add(this->lWait);
 			this->Controls->Add(this->bResetPost);
-			this->Controls->Add(this->bIncFS);
-			this->Controls->Add(this->bDecFS);
 			this->Controls->Add(this->bPrevShot);
 			this->Controls->Add(this->bNextShot);
 			this->Controls->Add(this->bAimPoint);
@@ -446,6 +544,10 @@ namespace Uploader2 {
 			this->Load += gcnew System::EventHandler(this, &ScoreForm::ScoreForm_Load);
 			this->Resize += gcnew System::EventHandler(this, &ScoreForm::ScoreForm_Resize);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbPreview))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbZoom))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawStart))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawEnd))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chXY))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudAimRadius))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -471,13 +573,19 @@ namespace Uploader2 {
 		bBack->Visible = false;
 		bBack->Text = "Back";
 		nudAimRadius->Visible = false;
-		bDecFS->Visible = false;
-		bIncFS->Visible = false;
 		lZoom->Visible = false;
 		bZoomIn->Visible = false;
 		bZoomOut->Visible = false;
 		pbTriage->Visible = false;
 		bDone->Visible = false;
+		tbManMsg->Visible = false;
+		pbZoom->Visible = false;
+		tbDrawEnd->Visible = false;
+		tbDrawStart->Visible = false;
+		lDrawStart->Visible = false;
+		lDrawEnd->Visible = false;
+		chXY->Visible = false;
+		bUndo->Visible = false;
 	}
 
 	private:
@@ -531,6 +639,9 @@ namespace Uploader2 {
 		String^ rootFolder;
 		Team ^team;
 
+		array<Drawing::Point> ^PXY;
+		array<Drawing::Point> ^PXYS; // selected points
+
 		Analyzer ^a;
 		ImageList ^imlist;
 
@@ -541,6 +652,25 @@ namespace Uploader2 {
 		Point mouseDownPos; // location where mouse button pressed on the pBPreview control
 		bool dragging;      // dragging gesture is/was detected after the last mouse down on the pbPreview control
 		bool mouseDown;     // between mouse down and mouse up events
+
+	private: System::Void tbDrawStart_Scroll(System::Object^  sender, System::EventArgs^  e) {
+		if (tbDrawStart->Value > tbDrawEnd->Value)
+			tbDrawStart->Value = tbDrawEnd->Value;
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+		a->registerClickOnDiffBM(Point(0, 0), PXYS);
+		a->undoRegisteredClick(PXYS);
+		ReplotChart();
+	}
+	private: System::Void tbDrawEnd_Scroll(System::Object^  sender, System::EventArgs^  e) {
+		if (tbDrawStart->Value > tbDrawEnd->Value)
+			tbDrawEnd->Value = tbDrawStart->Value;
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+		ReplotChart();
+	}
+	private: void ReplotChart();
+	private: System::Void bUndo_Click(System::Object^  sender, System::EventArgs^  e);
+
+	private: System::Void pbPreview_MouseLeave(System::Object^  sender, System::EventArgs^  e); 
 };
 }
 
