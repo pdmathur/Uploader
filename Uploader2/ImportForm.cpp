@@ -85,8 +85,12 @@ void Uploader2::ImportForm::loadFields(String^ targetId)
 	}
 
 	if (selected >= 0)
+	{
+		fieldId = venues[cbVenue->SelectedIndex]->id() + "," + fields[selected]->id();
 		cbField->SelectedIndex = selected;
+	}
 	else {
+		fieldId = "-1,-1";
 		cbField->SelectedIndex = -1;
 		cbField->Text = "";
 	}
@@ -225,6 +229,7 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 		imp->getImportedFrameCount(&priorFrames, &postFrames);  // total = 1 + prior + post.
 		file->WriteLine("preframes:" + priorFrames);
 		file->WriteLine("postframes:" + postFrames);
+		file->WriteLine("venuefield:" + fieldId);
 		file->Flush();
 	}
 	catch (Exception ^e)

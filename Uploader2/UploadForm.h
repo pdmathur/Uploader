@@ -364,6 +364,14 @@ namespace Uploader2 {
 		{
 			cbVenue->Items->Add(nlvenue[1][i]);
 		}
+		for (int i = 0; i < nlvenue[0]->Length; i++)
+		{
+			if (a->getVid()->Equals(nlvenue[0][i]))
+			{
+				cbVenue->SelectedIndex = i;
+				break;
+			}
+		}
 	}
 	private: System::Void cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		if (cbVenue->SelectedIndex >= 0 && cbVenue->SelectedIndex < nlvenue[0]->Length)
@@ -382,6 +390,16 @@ namespace Uploader2 {
 			{
 				cbField->Items->Add(nlfield[1][i]);
 			}
+
+			for (int i = 0; i < nlfield[0]->Length; i++)
+			{
+				if (a->getVFid()->Equals(nlfield[0][i]))
+				{
+					cbField->SelectedIndex = i;
+					break;
+				}
+			}
+
 		}
 	}
 	};
