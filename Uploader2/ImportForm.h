@@ -455,5 +455,6 @@ namespace Uploader2 {
 		int selIndex;
 		Boolean done;
 		int uploadCountLimit;
+		String ^fieldId;
 	};
 }

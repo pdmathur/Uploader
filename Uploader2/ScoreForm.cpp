@@ -37,6 +37,8 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 	a = gcnew Analyzer(log, rootFolder, folder);
 	if (a->isInitialized())
 	{
+		a->setYLim(950);
+		nudYLim->Value = 950;
 		array<String ^> ^pathparts = folder->Split(Path::DirectorySeparatorChar); // Set title of the window
 		this->Text = pathparts[pathparts->Length - 1];
 
@@ -163,6 +165,9 @@ void Uploader2::ScoreForm::setModeManual()
 	chXY->Visible = true;
 	chXY->Series->Clear();
 	bUndo->Visible = true;
+	lFrameNum->Visible = true;
+	nudFrameCnt->Visible = true;
+	nudFrameCnt->Maximum = a->getTF() - 1;
 }
 
 void Uploader2::ScoreForm::setModeNone()
@@ -234,9 +239,19 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseClick(System::Object^  sender,
 		pbPreview->Image = a->createBM(viewType, selIndex, pbPreview->Size); // the frame prior to the shot
 		tbHit->Text = a->getHitsCount().ToString(); // in case hit/miss changed
 	}
-	else if (mode == Mode::Manual)
+	else if (mode == Mode::Manual && e->Button == System::Windows::Forms::MouseButtons::Left)
 	{
+		//LOGINFO("Manual mouse click on preview pane");
 		a->registerClickOnDiffBM(e->Location, PXYS);
+		tbManMsg->Text = a->getColorDataString(e->Location, pbPreview->Size);
+		ReplotChart();
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+	}
+	else if (mode == Mode::Manual && e->Button == System::Windows::Forms::MouseButtons::Right)
+	{
+		//LOGINFO("Manual mouse click on preview pane");
+		a->registerClickOnDiffBM(e->Location, (unsigned int) nudFrameCnt->Value, PXYS);
+		tbManMsg->Text = a->getColorDataString(e->Location, pbPreview->Size);
 		ReplotChart();
 		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
 	}
@@ -325,6 +340,7 @@ void Uploader2::ScoreForm::ReplotChart()
 		chXY->Series["X"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
 		for (unsigned int i = t1; i < t2; i++)
 			chXY->Series["X"]->Points->AddXY(i, PXY[i].X);
+
 		chXY->Series->Add("Y");
 		chXY->Series["Y"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
 		for (unsigned int i = t1; i < t2; i++)
@@ -333,13 +349,16 @@ void Uploader2::ScoreForm::ReplotChart()
 
 	if (PXYS != nullptr)
 	{
+		t1 = (tbDrawStart->Value * PXY->Length) / 100;
+		t2 = (tbDrawEnd->Value * PXY->Length) / 100;
+
 		chXY->Series->Add("XS");
 		chXY->Series["XS"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
-		for (unsigned int i = 0; i < PXYS->Length; i++)
+		for (unsigned int i = t1; i < t2; i++)
 			chXY->Series["XS"]->Points->AddXY(i, PXYS[i].X);
 		chXY->Series->Add("YS");
 		chXY->Series["YS"]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastPoint;
-		for (unsigned int i = 0; i < PXYS->Length; i++)
+		for (unsigned int i = t1; i < t2; i++)
 			chXY->Series["YS"]->Points->AddXY(i, PXYS[i].Y);
 	}
 }
@@ -365,7 +384,7 @@ System::Void Uploader2::ScoreForm::bAimPoint_Click(System::Object^  sender, Syst
 }
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-	if (mode == Mode::Aimpoint || mode == Mode::Score)
+	if (mode == Mode::Aimpoint || mode == Mode::Score || mode == Mode::Manual)
 	{
 		mouseDownPos = e->Location;
 		this->dragging = false;
@@ -376,7 +395,7 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseDown(System::Object^  sender, 
 
 System::Void Uploader2::ScoreForm::pbPreview_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
-	if (mode == Mode::Aimpoint || mode == Mode::Score)
+	if (mode == Mode::Aimpoint || mode == Mode::Score || mode == Mode::Manual)
 		mouseDown = false;
 	//this->pbPreview->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::pbPreview_MouseMove);
 }
@@ -433,10 +452,14 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseMove(System::Object^  sender, 
 		// Draw tentative hover points
 		if (this->mode == Mode::Manual && PXYS != nullptr)
 		{
-			a->registerClickOnDiffBM(e->Location, PXYS);
+			//LOGINFO("Mouse move on preview pane");
+			Boolean popThis = a->registerClickOnDiffBM(e->Location, PXYS);
+			tbManMsg->Text = a->getColorDataString(e->Location, pbPreview->Size);
 			pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
 			ReplotChart();
-			a->undoRegisteredClick(PXYS);
+			if (popThis)
+				a->undoRegisteredClick(PXYS);
+			//LOGINFO("Mouse move End on preview pane");
 		}
 	}
 }
@@ -537,7 +560,11 @@ System::Void Uploader2::ScoreForm::bwFirstAnalysis_DoWork(System::Object^  sende
 			break;
 
 		a->selectVideo(i); // load video into memory
-		a->setShot(i, a->analyzeShotFromBeginning(false, false));
+		Boolean isShot = a->analyzeShotFromEnd(false, false);
+		if (isShot)
+			a->setShot(i, isShot);
+		else // one more try
+			a->setShot(i, a->analyzeShotFromBeginning(false, false));
 		worker->ReportProgress((int)(i * 100.0 / a->getVideoCount() + 0.5));
 		a->saveAnalysisData(); // do after a complete run is done
 	}
@@ -586,7 +613,27 @@ System::Void Uploader2::ScoreForm::pbPreview_MouseLeave(System::Object^  sender,
 {
 	if (mode == Mode::Manual)
 	{
+		tbManMsg->Text = a->getColorDataString(Point(0,0), pbPreview->Size);
 		ReplotChart();
 		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
 	}
+}
+
+System::Void Uploader2::ScoreForm::chXY_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+{
+	System::Windows::Forms::DataVisualization::Charting::Chart ^c = (System::Windows::Forms::DataVisualization::Charting::Chart ^)sender;
+	System::Windows::Forms::DataVisualization::Charting::HitTestResult ^r = c->HitTest(e->X, e->Y);
+	int t1 = (tbDrawStart->Value * PXY->Length) / 100;
+	if (r->PointIndex > 0 && chXY != nullptr && PXY->Length > r->PointIndex + t1 ) 
+	{
+		a->registerClickOnDiffBM(r->PointIndex + t1, PXYS);
+		ReplotChart();
+		pbPreview->Image = a->renderDiff(tbDrawStart->Value, tbDrawEnd->Value);
+	};
+
+}
+
+System::Void Uploader2::ScoreForm::nudYLim_ValueChanged(System::Object^  sender, System::EventArgs^  e)
+{
+	a->setYLim((int)nudYLim->Value);
 }

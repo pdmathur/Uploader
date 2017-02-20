@@ -100,6 +100,9 @@ namespace Uploader2 {
 	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chXY;
 	private: System::Windows::Forms::NumericUpDown^  nudAimRadius;
 	private: System::Windows::Forms::Button^  bUndo;
+	private: System::Windows::Forms::NumericUpDown^  nudFrameCnt;
+	private: System::Windows::Forms::Label^  lFrameNum;
+	private: System::Windows::Forms::NumericUpDown^  nudYLim;
 
 
 
@@ -159,12 +162,17 @@ namespace Uploader2 {
 			this->chXY = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			this->nudAimRadius = (gcnew System::Windows::Forms::NumericUpDown());
 			this->bUndo = (gcnew System::Windows::Forms::Button());
+			this->nudFrameCnt = (gcnew System::Windows::Forms::NumericUpDown());
+			this->lFrameNum = (gcnew System::Windows::Forms::Label());
+			this->nudYLim = (gcnew System::Windows::Forms::NumericUpDown());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbPreview))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbZoom))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawStart))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawEnd))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chXY))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudAimRadius))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudFrameCnt))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudYLim))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// label2
@@ -237,7 +245,7 @@ namespace Uploader2 {
 			// 
 			// bUpdAnalysis
 			// 
-			this->bUpdAnalysis->Location = System::Drawing::Point(486, 19);
+			this->bUpdAnalysis->Location = System::Drawing::Point(515, 19);
 			this->bUpdAnalysis->Name = L"bUpdAnalysis";
 			this->bUpdAnalysis->Size = System::Drawing::Size(96, 23);
 			this->bUpdAnalysis->TabIndex = 23;
@@ -307,7 +315,7 @@ namespace Uploader2 {
 			// 
 			// bAimPoint
 			// 
-			this->bAimPoint->Location = System::Drawing::Point(588, 19);
+			this->bAimPoint->Location = System::Drawing::Point(617, 19);
 			this->bAimPoint->Name = L"bAimPoint";
 			this->bAimPoint->Size = System::Drawing::Size(96, 23);
 			this->bAimPoint->TabIndex = 30;
@@ -422,7 +430,7 @@ namespace Uploader2 {
 			this->tbManMsg->Location = System::Drawing::Point(676, 449);
 			this->tbManMsg->Multiline = true;
 			this->tbManMsg->Name = L"tbManMsg";
-			this->tbManMsg->Size = System::Drawing::Size(238, 65);
+			this->tbManMsg->Size = System::Drawing::Size(299, 115);
 			this->tbManMsg->TabIndex = 56;
 			// 
 			// pbZoom
@@ -483,6 +491,7 @@ namespace Uploader2 {
 			this->chXY->Size = System::Drawing::Size(296, 182);
 			this->chXY->TabIndex = 66;
 			this->chXY->Text = L"X-Y Values";
+			this->chXY->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &ScoreForm::chXY_MouseDown);
 			// 
 			// nudAimRadius
 			// 
@@ -490,6 +499,7 @@ namespace Uploader2 {
 			this->nudAimRadius->Name = L"nudAimRadius";
 			this->nudAimRadius->Size = System::Drawing::Size(61, 20);
 			this->nudAimRadius->TabIndex = 67;
+			this->nudAimRadius->ValueChanged += gcnew System::EventHandler(this, &ScoreForm::nudAimRadius_ValueChanged);
 			// 
 			// bUndo
 			// 
@@ -501,11 +511,41 @@ namespace Uploader2 {
 			this->bUndo->UseVisualStyleBackColor = true;
 			this->bUndo->Click += gcnew System::EventHandler(this, &ScoreForm::bUndo_Click);
 			// 
+			// nudFrameCnt
+			// 
+			this->nudFrameCnt->Location = System::Drawing::Point(772, 235);
+			this->nudFrameCnt->Name = L"nudFrameCnt";
+			this->nudFrameCnt->Size = System::Drawing::Size(61, 20);
+			this->nudFrameCnt->TabIndex = 69;
+			// 
+			// lFrameNum
+			// 
+			this->lFrameNum->AccessibleRole = System::Windows::Forms::AccessibleRole::CheckButton;
+			this->lFrameNum->AutoSize = true;
+			this->lFrameNum->Location = System::Drawing::Point(770, 219);
+			this->lFrameNum->Name = L"lFrameNum";
+			this->lFrameNum->Size = System::Drawing::Size(39, 13);
+			this->lFrameNum->TabIndex = 70;
+			this->lFrameNum->Text = L"Rt. Clk";
+			// 
+			// nudYLim
+			// 
+			this->nudYLim->Location = System::Drawing::Point(448, 22);
+			this->nudYLim->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1500, 0, 0, 0 });
+			this->nudYLim->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, System::Int32::MinValue });
+			this->nudYLim->Name = L"nudYLim";
+			this->nudYLim->Size = System::Drawing::Size(61, 20);
+			this->nudYLim->TabIndex = 71;
+			this->nudYLim->ValueChanged += gcnew System::EventHandler(this, &ScoreForm::nudYLim_ValueChanged);
+			// 
 			// ScoreForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(988, 576);
+			this->Controls->Add(this->nudYLim);
+			this->Controls->Add(this->lFrameNum);
+			this->Controls->Add(this->nudFrameCnt);
 			this->Controls->Add(this->bUndo);
 			this->Controls->Add(this->nudAimRadius);
 			this->Controls->Add(this->chXY);
@@ -549,6 +589,8 @@ namespace Uploader2 {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawEnd))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chXY))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudAimRadius))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudFrameCnt))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->nudYLim))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -557,6 +599,8 @@ namespace Uploader2 {
 
 	private: void makeControlsInvisible()
 	{
+		lFrameNum->Visible = false;
+		nudFrameCnt->Visible = false;
 		lClickPrompt->Text = "";
 		bResetPost->Visible = false;
 		bUpdAnalysis->Visible = false;
@@ -671,6 +715,9 @@ namespace Uploader2 {
 	private: System::Void bUndo_Click(System::Object^  sender, System::EventArgs^  e);
 
 	private: System::Void pbPreview_MouseLeave(System::Object^  sender, System::EventArgs^  e); 
+	private: System::Void chXY_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e); 
+
+	private: System::Void nudYLim_ValueChanged(System::Object^  sender, System::EventArgs^  e);
 };
 }
 
