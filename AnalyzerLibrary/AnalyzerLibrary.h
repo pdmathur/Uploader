@@ -1,8 +1,8 @@
 
 #pragma once
 
-#define _ws "http://dev.trifectashot.com/trifecta/api"
-#define _aws "https://tfcta.s3.amazonaws.com/"
+#define _ws "https://dev.trifectashot.com/trifecta/api"
+#define _aws "https://tfcta2.s3.amazonaws.com/"
 #define _localName "\\\\192.168.0.100\\media"
 
 #define POSTTRIG 7	// Number of samples beyond trigger needed for target trajsectory extrapolation
