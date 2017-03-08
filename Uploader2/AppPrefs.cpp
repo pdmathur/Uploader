@@ -3,6 +3,7 @@
 Uploader2::AppPrefs::AppPrefs()
 	: _props(gcnew Dictionary<String^, String^>())
 	, _path(System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\prefs.txt")
+	, _daemon(false)
 	, _localMode(false)
 	, _showBanner(true)
 	, _checkForUpdates(false)
@@ -86,6 +87,11 @@ int^ Uploader2::AppPrefs::minimumSpanPoints()
 	return _minimumSpanPoints;
 }
 
+bool Uploader2::AppPrefs::daemonMode()
+{
+	return _daemon;
+}
+
 bool Uploader2::AppPrefs::localMode()
 {
 	return _localMode;
@@ -129,6 +135,11 @@ void Uploader2::AppPrefs::setPassword(System::String^ password)
 void Uploader2::AppPrefs::setLocalMode()
 {
 	_localMode = true;
+}
+
+void Uploader2::AppPrefs::setDaemonMode()
+{
+	_daemon = true;
 }
 
 void Uploader2::AppPrefs::setSharePath(System::String^ path)

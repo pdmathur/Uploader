@@ -29,6 +29,7 @@ namespace Uploader2
 		int^ initialTargetSearchWindow();
 		int^ minimumSpanPoints();
 
+		bool daemonMode();
 		bool localMode();
 		bool showBanner();
 		bool checkForUpdates();
@@ -39,6 +40,7 @@ namespace Uploader2
 	public: // property overrides
 		void setUsername(String^ user);
 		void setPassword(String^ password);
+		void setDaemonMode();
 		void setLocalMode();
 		void setSharePath(String^ path);
 		void disableBanner();
@@ -53,6 +55,7 @@ namespace Uploader2
 		Dictionary<String^, String^>^ _props;
 		String^       _path;
 
+		bool	_daemon;
 		bool    _localMode;
 		bool    _showBanner;
 		bool    _checkForUpdates;

@@ -159,6 +159,7 @@ namespace Uploader2 {
 
 	public:
 		String ^ getFolder() { return folder; }
+		String ^ getDatasetId() { return dataset_id; }
 	private:
 		System::Void bSelect_Click(System::Object^  sender, System::EventArgs^  e);
 		System::Void ChooseDSForm_Load(System::Object^  sender, System::EventArgs^  e);
@@ -171,6 +172,7 @@ namespace Uploader2 {
 		array<array<String ^>^> ^nl;
 		array<array<String ^>^> ^nl2;
 		String^ folder;
+		String ^dataset_id;
 		Logger^ log;
 		String^ uid;
 		Team^ team;

@@ -28,9 +28,14 @@ System::Void Uploader2::ChooseDSForm::bSelect_Click(System::Object^  sender, Sys
 	String ^desc = nl[1][cbPendingList->SelectedIndex];
 	if (desc->Equals("null"))
 		desc = "no description set";
+
+	if (desc->StartsWith("~"))
+		desc = desc->Substring(1); // strip the leading tilde
+
 	desc = desc + " " + nl[0][cbPendingList->SelectedIndex] + " " + nl[2][cbPendingList->SelectedIndex];
 	desc = desc->Replace("*", "x")->Replace("\\", "")->Replace("|", "I")->Replace("/", ",")->Replace(">", "")->Replace("<", "")->Replace(":", ";")->Replace("\"", "'")->Replace("?", "");
 	folder = System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader\\" + desc;
+	dataset_id = nl[0][cbPendingList->SelectedIndex];
 
 	if (System::IO::File::Exists(folder + "\\dlmanifest.txt"))
 	{
@@ -38,7 +43,7 @@ System::Void Uploader2::ChooseDSForm::bSelect_Click(System::Object^  sender, Sys
 			"Confirm Re-download", System::Windows::Forms::MessageBoxButtons::YesNo);
 		if (dialogResult == System::Windows::Forms::DialogResult::No)
 		{
-			ScoreForm ^sf = gcnew ScoreForm(log, svc, this->prefs, folder, this->team);
+			ScoreForm ^sf = gcnew ScoreForm(log, svc, this->prefs, folder, this->team, nl[0][cbPendingList->SelectedIndex]);
 			this->Hide();
 			sf->ShowDialog();
 			this->Show();
@@ -92,7 +97,7 @@ System::Void Uploader2::ChooseDSForm::bwBackgnd_RunWorkerCompleted(System::Objec
 			MessageBox::Show("Download failed");
 		else
 		{
-			ScoreForm ^sf = gcnew ScoreForm(log, svc, prefs, folder, this->team);
+			ScoreForm ^sf = gcnew ScoreForm(log, svc, prefs, folder, this->team, dataset_id);
 			this->Hide();
 			sf->ShowDialog();
 			this->Show();

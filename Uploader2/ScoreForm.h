@@ -22,7 +22,7 @@ namespace Uploader2 {
 	public ref class ScoreForm : public System::Windows::Forms::Form
 	{
 	public:
-		ScoreForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, String ^_folder, Team ^team)
+		ScoreForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, String ^_folder, Team ^team, String ^dataset_id)
 		{
 			InitializeComponent();
 			this->log = _log;
@@ -30,6 +30,7 @@ namespace Uploader2 {
 			this->prefs = prefs;
 			this->folder = _folder;
 			this->team = team;
+			this->dataset_id = dataset_id;
 			LOGINFO("Scoreform Loaded");
 		}
 
@@ -682,6 +683,7 @@ namespace Uploader2 {
 		String^ folder;
 		String^ rootFolder;
 		Team ^team;
+		String ^dataset_id;
 
 		array<Drawing::Point> ^PXY;
 		array<Drawing::Point> ^PXYS; // selected points

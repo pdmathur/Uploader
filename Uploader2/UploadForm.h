@@ -21,13 +21,14 @@ namespace Uploader2 {
 	public ref class UploadForm : public System::Windows::Forms::Form
 	{
 	public:
-		UploadForm(Logger ^_log, Services ^_svc, Analyzer ^_a, Team ^team)
+		UploadForm(Logger ^_log, Services ^_svc, Analyzer ^_a, Team ^team, String ^dataset_id)
 		{
 			InitializeComponent();
 			this->a = _a;
 			this->log = _log;
 			this->svc = _svc;
 			this->team = team;
+			this->dataset_id = dataset_id;
 			LOGINFO("Created Upload Form");
 		}
 
@@ -51,6 +52,8 @@ namespace Uploader2 {
 	private: System::Windows::Forms::ComboBox^  cbVenue;
 	private: System::Windows::Forms::TextBox^  tbDesc;
 	private: System::Windows::Forms::Button^  bUpload;
+	private: System::Windows::Forms::Label^  label5;
+	private: System::Windows::Forms::ComboBox^  cbPrevEvents;
 	protected:
 
 	private:
@@ -75,6 +78,8 @@ namespace Uploader2 {
 			this->cbVenue = (gcnew System::Windows::Forms::ComboBox());
 			this->tbDesc = (gcnew System::Windows::Forms::TextBox());
 			this->bUpload = (gcnew System::Windows::Forms::Button());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->cbPrevEvents = (gcnew System::Windows::Forms::ComboBox());
 			this->SuspendLayout();
 			// 
 			// label1
@@ -115,26 +120,29 @@ namespace Uploader2 {
 			// 
 			// cbPlayer
 			// 
+			this->cbPlayer->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->cbPlayer->FormattingEnabled = true;
 			this->cbPlayer->Location = System::Drawing::Point(100, 43);
 			this->cbPlayer->Name = L"cbPlayer";
-			this->cbPlayer->Size = System::Drawing::Size(308, 21);
+			this->cbPlayer->Size = System::Drawing::Size(383, 21);
 			this->cbPlayer->TabIndex = 8;
 			// 
 			// cbField
 			// 
+			this->cbField->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->cbField->FormattingEnabled = true;
 			this->cbField->Location = System::Drawing::Point(100, 99);
 			this->cbField->Name = L"cbField";
-			this->cbField->Size = System::Drawing::Size(308, 21);
+			this->cbField->Size = System::Drawing::Size(383, 21);
 			this->cbField->TabIndex = 10;
 			// 
 			// cbVenue
 			// 
+			this->cbVenue->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->cbVenue->FormattingEnabled = true;
 			this->cbVenue->Location = System::Drawing::Point(100, 70);
 			this->cbVenue->Name = L"cbVenue";
-			this->cbVenue->Size = System::Drawing::Size(308, 21);
+			this->cbVenue->Size = System::Drawing::Size(383, 21);
 			this->cbVenue->TabIndex = 9;
 			this->cbVenue->SelectedIndexChanged += gcnew System::EventHandler(this, &UploadForm::cbVenue_SelectedIndexChanged);
 			// 
@@ -142,12 +150,12 @@ namespace Uploader2 {
 			// 
 			this->tbDesc->Location = System::Drawing::Point(100, 17);
 			this->tbDesc->Name = L"tbDesc";
-			this->tbDesc->Size = System::Drawing::Size(308, 20);
+			this->tbDesc->Size = System::Drawing::Size(383, 20);
 			this->tbDesc->TabIndex = 7;
 			// 
 			// bUpload
 			// 
-			this->bUpload->Location = System::Drawing::Point(202, 135);
+			this->bUpload->Location = System::Drawing::Point(199, 171);
 			this->bUpload->Name = L"bUpload";
 			this->bUpload->Size = System::Drawing::Size(75, 23);
 			this->bUpload->TabIndex = 11;
@@ -155,11 +163,31 @@ namespace Uploader2 {
 			this->bUpload->UseVisualStyleBackColor = true;
 			this->bUpload->Click += gcnew System::EventHandler(this, &UploadForm::bUpload_Click);
 			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(12, 126);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(58, 13);
+			this->label5->TabIndex = 12;
+			this->label5->Text = L"Overwrite\?";
+			// 
+			// cbPrevEvents
+			// 
+			this->cbPrevEvents->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->cbPrevEvents->FormattingEnabled = true;
+			this->cbPrevEvents->Location = System::Drawing::Point(100, 126);
+			this->cbPrevEvents->Name = L"cbPrevEvents";
+			this->cbPrevEvents->Size = System::Drawing::Size(383, 21);
+			this->cbPrevEvents->TabIndex = 13;
+			// 
 			// UploadForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(454, 170);
+			this->ClientSize = System::Drawing::Size(506, 206);
+			this->Controls->Add(this->cbPrevEvents);
+			this->Controls->Add(this->label5);
 			this->Controls->Add(this->bUpload);
 			this->Controls->Add(this->tbDesc);
 			this->Controls->Add(this->cbVenue);
@@ -183,10 +211,12 @@ namespace Uploader2 {
 		Analyzer ^a;
 		Services ^svc;
 		Team ^team;
+		String ^dataset_id;
 
 		array<array<String ^> ^> ^nluser;
 		array<array<String ^> ^> ^nlvenue;
 		array<array<String ^> ^> ^nlfield;
+		array<array<String ^> ^> ^nlevents;
 
 	private: System::Void bUpload_Click(System::Object^  sender, System::EventArgs^  e) {
 		String ^msg;
@@ -228,9 +258,9 @@ namespace Uploader2 {
 		}
 		Drawing::Size es = a->getExportSize();
 		LOGINFO("Upload: set top-left reference to " + tl.X + ", " + tl.Y);
-		evId = svc->createEvent4(fieldid, uid, desc,
+		evId = svc->createEvent5(fieldid, uid, desc,
 			Point(a->getAimPoint().X - tl.X - es.Width / 2, a->getAimPoint().Y - tl.Y - es.Height / 2),
-			a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate(), team->id());
+			a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate(), team->id(), this->dataset_id);
 
 		LOGINFO("Event id from server is: " + evId);
 
@@ -330,6 +360,14 @@ namespace Uploader2 {
 				}
 			}
 		}
+
+		if (cbPrevEvents->SelectedIndex != -1)
+		{
+			svc->removeEvent(nlevents[0][cbPrevEvents->SelectedIndex], msg);
+			if (msg->Length > 0)
+				LOGWARN("Error removing event " + nlevents[0][cbPrevEvents->SelectedIndex]);
+		}
+
 		System::Windows::Forms::MessageBox::Show("As all things do, the Upload process has ended.  It was fun.");
 		this->Close();
 	}
@@ -371,6 +409,19 @@ namespace Uploader2 {
 				cbVenue->SelectedIndex = i;
 				break;
 			}
+		}
+
+		nlevents = svc->getEventsForDataset(this->dataset_id, msg);
+		if (msg->Length > 0)
+		{
+			LOGWARN(msg);
+		}
+		else
+		{
+			for (int i = 0; i < nlevents[1]->Length; i++)
+				cbPrevEvents->Items->Add(nlevents[1][i] + "(" + nlevents[3][i] + " on " + nlevents[2][i] + ")");
+			if (nlevents[1]->Length == 1)
+				cbPrevEvents->SelectedIndex = 0;
 		}
 	}
 	private: System::Void cbVenue_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
