@@ -1,7 +1,5 @@
 #pragma once
 
-#define VERSION "ul-6-8"
-
 #include "ImportForm.h"
 #include "ScoreForm.h"
 #include "ChooseDSForm.h"

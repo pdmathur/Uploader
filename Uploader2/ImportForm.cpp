@@ -160,7 +160,7 @@ System::Void Uploader2::ImportForm::ImportForm_Load(System::Object^  sender, Sys
 
 	// Update title
 	String^ share = svc->isLocalClient() ? svc->getShareName() : "cloud";
-	this->Text = "Trifecta Shot\u2122 Systems UPLOADER (" + VERSION + ": " + share + ")";
+	this->Text = "Trifecta Shot\u2122 Systems UPLOADER (" + svc->dllVersion() + ": " + share + ")";
 
 	lbTeamName->Text = this->team->name();
 }
