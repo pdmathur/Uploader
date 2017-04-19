@@ -16,12 +16,12 @@ System::Void Uploader2::LoginForm::login() {
 		cache.update(tbUser->Text);
 
 		int role = svc->getRoles();
-		if (role & (ROLE_ANALYZER | ROLE_OWNER))
+		if (role & (ROLE_ANALYZER | ROLE_OWNER ))
 		{
 			LOGINFO("Sign-In: user is an Analyzer or the owner");
 			this->Hide();
 
-			TeamForm ^tf = gcnew TeamForm(log, svc, true);
+			TeamForm ^tf = gcnew TeamForm(log, svc, true, false);
 			tf->ShowDialog();
 			if (tf->DialogResult == Windows::Forms::DialogResult::OK)
 			{
@@ -30,16 +30,16 @@ System::Void Uploader2::LoginForm::login() {
 			}
 			this->Close();
 		}
-		else if (role & ROLE_COACH)
+		else if (role & ROLE_COACH | role & ROLE_PLAYER)
 		{
-			LOGINFO("Sign-In: user is a coach");
+			LOGINFO("Sign-In: user is a coach or player");
 			this->Hide();
 
-			TeamForm ^tf = gcnew TeamForm(log, svc, false);
+			TeamForm ^tf = gcnew TeamForm(log, svc, false, (role & ROLE_PLAYER) != 0 && (role & ROLE_COACH) == 0);
 			tf->ShowDialog();
 			if (tf->DialogResult == Windows::Forms::DialogResult::OK)
 			{
-				ImportForm ^imf = gcnew ImportForm(log, svc, this->prefs, tf->selectedTeam());
+				ImportForm ^imf = gcnew ImportForm(log, svc, this->prefs, tf->selectedTeam(), (role & ROLE_PLAYER) != 0 && (role & ROLE_COACH) == 0);
 				imf->ShowDialog();
 			}
 			this->Close();

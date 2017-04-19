@@ -104,6 +104,7 @@ namespace Uploader2 {
 	private: System::Windows::Forms::NumericUpDown^  nudFrameCnt;
 	private: System::Windows::Forms::Label^  lFrameNum;
 	private: System::Windows::Forms::NumericUpDown^  nudYLim;
+	private: System::Windows::Forms::CheckBox^  cbUseYLim;
 
 
 
@@ -166,6 +167,7 @@ namespace Uploader2 {
 			this->nudFrameCnt = (gcnew System::Windows::Forms::NumericUpDown());
 			this->lFrameNum = (gcnew System::Windows::Forms::Label());
 			this->nudYLim = (gcnew System::Windows::Forms::NumericUpDown());
+			this->cbUseYLim = (gcnew System::Windows::Forms::CheckBox());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbPreview))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbZoom))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tbDrawStart))->BeginInit();
@@ -539,11 +541,22 @@ namespace Uploader2 {
 			this->nudYLim->TabIndex = 71;
 			this->nudYLim->ValueChanged += gcnew System::EventHandler(this, &ScoreForm::nudYLim_ValueChanged);
 			// 
+			// cbUseYLim
+			// 
+			this->cbUseYLim->AutoSize = true;
+			this->cbUseYLim->Location = System::Drawing::Point(427, 25);
+			this->cbUseYLim->Name = L"cbUseYLim";
+			this->cbUseYLim->Size = System::Drawing::Size(15, 14);
+			this->cbUseYLim->TabIndex = 72;
+			this->cbUseYLim->UseVisualStyleBackColor = true;
+			this->cbUseYLim->CheckedChanged += gcnew System::EventHandler(this, &ScoreForm::cbUseYLim_CheckedChanged);
+			// 
 			// ScoreForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(988, 576);
+			this->Controls->Add(this->cbUseYLim);
 			this->Controls->Add(this->nudYLim);
 			this->Controls->Add(this->lFrameNum);
 			this->Controls->Add(this->nudFrameCnt);
@@ -631,6 +644,7 @@ namespace Uploader2 {
 		lDrawEnd->Visible = false;
 		chXY->Visible = false;
 		bUndo->Visible = false;
+		cbUseYLim->Visible = false;
 	}
 
 	private:
@@ -720,6 +734,12 @@ namespace Uploader2 {
 	private: System::Void chXY_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e); 
 
 	private: System::Void nudYLim_ValueChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void cbUseYLim_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
+		if (cbUseYLim->Checked)
+			a->setYLim((Int32)nudYLim->Value);
+		else
+			a->setYLim(-1);
+	}
 };
 }
 

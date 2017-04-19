@@ -37,8 +37,10 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 	a = gcnew Analyzer(log, rootFolder, folder);
 	if (a->isInitialized())
 	{
-		a->setYLim(950);
 		nudYLim->Value = 950;
+		cbUseYLim->Checked = true;
+		a->setYLim(950); // also happens automatically above ...
+
 		array<String ^> ^pathparts = folder->Split(Path::DirectorySeparatorChar); // Set title of the window
 		this->Text = pathparts[pathparts->Length - 1];
 
@@ -61,7 +63,9 @@ System::Void Uploader2::ScoreForm::ScoreForm_Load(System::Object^  sender, Syste
 		//a->setWin(Drawing::Rectangle(margins, margins, videoSize.Width - (2 * margins), videoSize.Height - (2 * margins)));
 
 		tbDrawStart->Maximum = 100;
+		tbDrawStart->Value = 0;
 		tbDrawEnd->Maximum = 100;
+		tbDrawEnd->Value = 100;
 
 		if (!a->isSavedDataDirty()) // we should process this roll, the anlyzer has not been used on it
 		{
@@ -160,7 +164,7 @@ void Uploader2::ScoreForm::setModeManual()
 	lDrawStart->Visible = true;
 	lDrawEnd->Visible = true;
 	tbDrawEnd->Value = 100;
-	tbDrawStart->Value = 0;
+	//tbDrawStart->Value = 0; // leav at previous location
 	lClickPrompt->Text = "Select 3 points on the line.  Wait ~10s after that";
 	chXY->Visible = true;
 	chXY->Series->Clear();
@@ -168,6 +172,12 @@ void Uploader2::ScoreForm::setModeManual()
 	lFrameNum->Visible = true;
 	nudFrameCnt->Visible = true;
 	nudFrameCnt->Maximum = a->getTF() - 1;
+	cbUseYLim->Visible = true;
+	if (cbUseYLim->Checked)
+		a->setYLim((Int32)nudYLim->Value);
+	else
+		a->setYLim(-1);
+
 }
 
 void Uploader2::ScoreForm::setModeNone()
@@ -479,9 +489,12 @@ System::Void Uploader2::ScoreForm::bDone_Click(System::Object^  sender, System::
 
 System::Void Uploader2::ScoreForm::ScoreForm_Resize(System::Object^  sender, System::EventArgs^  e)
 {
-	lvShots->Width = this->Width - 23;
-	lvShots->Height = this->Height - (603 - 480);
-	bDone->Top = this->Height - (603 - 541);
+	int borderWidth = (this->Width - this->ClientSize.Width) / 2;
+	int TitlebarHeight = this->Height - this->ClientSize.Height - 2 * borderWidth;
+
+	lvShots->Width = this->ClientSize.Width - 2 * lvShots->Location.X; // 23;
+	bDone->Top = this->ClientSize.Height - bDone->Height - 4; // - (603 - 541);
+	lvShots->Height = bDone->Top - 4 - lvShots->Location.Y; // this->Height - (603 - 480);
 }
 
 System::Void Uploader2::ScoreForm::bDecFS_Click(System::Object^  sender, System::EventArgs^  e)

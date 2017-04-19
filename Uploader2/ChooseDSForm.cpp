@@ -79,9 +79,9 @@ System::Void Uploader2::ChooseDSForm::ChooseDSForm_Load(System::Object^  sender,
 	for (int i = 0; i < nl[0]->Length; i++)
 	{
 		if (nl[1][i] == nullptr || nl[1][i]->Length == 0 || nl[1][i]->Equals("null"))
-			cbPendingList->Items->Add("** no description ** created on " + nl[2][i]);
+			cbPendingList->Items->Add(nl[0][i] + " ** n/a ** on " + nl[2][i]);
 		else
-			cbPendingList->Items->Add(nl[1][i] + " created on " + nl[2][i]);
+			cbPendingList->Items->Add(nl[0][i] + " " + nl[1][i] + " on " + nl[2][i]);
 	}
 }
 System::Void Uploader2::ChooseDSForm::bwBackgnd_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
@@ -126,6 +126,8 @@ System::Void Uploader2::ChooseDSForm::bwBackgnd_DoWork(System::Object^  sender, 
 
 				if (nl2[1][i]->Equals("txt"))
 					localfilename = folder + "\\dlmanifest.txt";
+				else if (nl2[1][i]->Equals("jpg-aim"))
+					localfilename = folder + "\\aimshot.jpg";
 				else
 					localfilename = folder + "\\" + nl2[2][i];
 

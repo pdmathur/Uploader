@@ -21,16 +21,18 @@ namespace Uploader2 {
 		Logger ^log;
 		Services ^svc;
 		Boolean userIsAdmin;
+		Boolean userIsPlayer;
 		System::Collections::Generic::List<Team^> teams;
 
 		private: System::Windows::Forms::TextBox^  tbCoachNickname;
 		private: System::Windows::Forms::Label^  label5;
 
 	public:
-		TeamForm(Logger ^_log, Services ^_svc, Boolean _admin){
+		TeamForm(Logger ^_log, Services ^_svc, Boolean _admin, Boolean _player){
 			InitializeComponent();
 			this->log = _log;
 			this->userIsAdmin = _admin;
+			this->userIsPlayer = _player;
 			this->svc = _svc;
 			LOGINFO("Initialized TeamForm");
 		}
