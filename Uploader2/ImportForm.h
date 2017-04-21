@@ -27,13 +27,14 @@ namespace Uploader2 {
 	public ref class ImportForm : public System::Windows::Forms::Form
 	{
 	public:
-		ImportForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, Team^ _team)
+		ImportForm(Logger ^_log, Services ^_svc, AppPrefs^ prefs, Team^ _team, Boolean _userIsPlayer)
 		{
 			InitializeComponent();
 			this->log = _log;
 			this->team = _team;
 			this->svc = _svc;
 			this->prefs = prefs;
+			this->userIsPlayer = _userIsPlayer;
 			LOGINFO("Created Import Form");
 		}
 
@@ -77,6 +78,8 @@ namespace Uploader2 {
 
 	private: System::Windows::Forms::Label^  lbStationValue;
 	private: System::Windows::Forms::Label^  label8;
+	private: System::Windows::Forms::Label^  label9;
+	private: System::Windows::Forms::Label^  label10;
 
 
 	private: System::ComponentModel::IContainer^  components;
@@ -123,6 +126,8 @@ namespace Uploader2 {
 			this->btNewField = (gcnew System::Windows::Forms::Button());
 			this->lbStationValue = (gcnew System::Windows::Forms::Label());
 			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->label9 = (gcnew System::Windows::Forms::Label());
+			this->label10 = (gcnew System::Windows::Forms::Label());
 			this->statusStrip1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->BeginInit();
 			this->SuspendLayout();
@@ -164,7 +169,7 @@ namespace Uploader2 {
 			// 
 			this->bImport->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->bImport->Location = System::Drawing::Point(199, 407);
+			this->bImport->Location = System::Drawing::Point(119, 406);
 			this->bImport->Name = L"bImport";
 			this->bImport->Size = System::Drawing::Size(86, 33);
 			this->bImport->TabIndex = 7;
@@ -225,7 +230,7 @@ namespace Uploader2 {
 			// sslStat
 			// 
 			this->sslStat->Name = L"sslStat";
-			this->sslStat->Size = System::Drawing::Size(39, 17);
+			this->sslStat->Size = System::Drawing::Size(38, 17);
 			this->sslStat->Text = L"Ready";
 			// 
 			// toolStripProgressBar1
@@ -264,9 +269,9 @@ namespace Uploader2 {
 				static_cast<System::Byte>(0)));
 			this->lbTeamName->Location = System::Drawing::Point(104, 7);
 			this->lbTeamName->Name = L"lbTeamName";
-			this->lbTeamName->Size = System::Drawing::Size(19, 20);
+			this->lbTeamName->Size = System::Drawing::Size(15, 20);
 			this->lbTeamName->TabIndex = 11;
-			this->lbTeamName->Text = L"n";
+			this->lbTeamName->Text = L"-";
 			// 
 			// label4
 			// 
@@ -328,7 +333,7 @@ namespace Uploader2 {
 			this->trackBar1->Maximum = 5;
 			this->trackBar1->Minimum = 1;
 			this->trackBar1->Name = L"trackBar1";
-			this->trackBar1->Size = System::Drawing::Size(115, 45);
+			this->trackBar1->Size = System::Drawing::Size(115, 42);
 			this->trackBar1->TabIndex = 6;
 			this->trackBar1->TickStyle = System::Windows::Forms::TickStyle::Both;
 			this->trackBar1->Value = 1;
@@ -376,12 +381,36 @@ namespace Uploader2 {
 			this->label8->TabIndex = 22;
 			this->label8->Text = L"Shooter";
 			// 
+			// label9
+			// 
+			this->label9->AutoSize = true;
+			this->label9->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label9->Location = System::Drawing::Point(221, 406);
+			this->label9->Name = L"label9";
+			this->label9->Size = System::Drawing::Size(198, 13);
+			this->label9->TabIndex = 23;
+			this->label9->Text = L"Allow 40-60 min for typical upload";
+			// 
+			// label10
+			// 
+			this->label10->AutoSize = true;
+			this->label10->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label10->Location = System::Drawing::Point(221, 426);
+			this->label10->Name = L"label10";
+			this->label10->Size = System::Drawing::Size(221, 13);
+			this->label10->TabIndex = 24;
+			this->label10->Text = L"Slower connections could take longer";
+			// 
 			// ImportForm
 			// 
 			this->AllowDrop = true;
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(497, 478);
+			this->Controls->Add(this->label10);
+			this->Controls->Add(this->label9);
 			this->Controls->Add(this->label8);
 			this->Controls->Add(this->lbStationValue);
 			this->Controls->Add(this->btNewField);
@@ -449,6 +478,7 @@ namespace Uploader2 {
 		Services ^svc;
 		Team^ team;
 		AppPrefs^ prefs;
+		Boolean userIsPlayer;
 
 		String ^folder;
 		array<String ^> ^lvi;

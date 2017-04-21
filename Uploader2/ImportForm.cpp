@@ -163,6 +163,11 @@ System::Void Uploader2::ImportForm::ImportForm_Load(System::Object^  sender, Sys
 	this->Text = "Trifecta Shot\u2122 Systems UPLOADER (" + svc->dllVersion() + ": " + share + ")";
 
 	lbTeamName->Text = this->team->name();
+	if (userIsPlayer)
+	{
+		cbLimit->Visible = false;
+		tbLimit->Visible = false;
+	}
 }
 
 System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::ComponentModel::DoWorkEventArgs ^e)
@@ -185,6 +190,7 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 
 	Drawing::Point p;
 	double fps;
+	Drawing::Rectangle exportRect(EXPORTRECT);
 
 	// Do a quick check of the file formats prior to copy
 	for (int i = 0; i < lvi->Length; i++)
@@ -204,7 +210,7 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 				MessageBox::Show(msg);
 				return;
 			}
-			imp->findAimPoint((String ^)lvi->GetValue(i), 15, &p, msg);
+			imp->findAimPoint(folder + "\\aimshot.jpg", exportRect, (String ^)lvi->GetValue(i), 15, &p, msg);
 			if (msg->Length > 0)
 			{
 				MessageBox::Show(msg);
@@ -216,7 +222,6 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	// Index the files ...
 	String ^manifest = folder + "\\manifest.txt";
 	StreamWriter ^file = gcnew StreamWriter(manifest);
-	Drawing::Rectangle exportRect(EXPORTRECT);
 	try {
 		file->WriteLine("desc:" + tbDesc->Text);
 		if (p.X == -1 || p.Y == -1)
@@ -250,6 +255,16 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 	Boolean forceDone = false;
 	for (int i = 0; i < lvi->Length && !forceDone; i++)
 	{
+		worker->ReportProgress((int)(0.5 + 100.0 * i / lvi->Length), "Copying ...");
+		try {
+			File::Copy((String ^)lvi->GetValue(i), folder + "\\video-" + (i+1) + ".mp4");  //TODO .... get extension from filename
+		}
+		catch (Exception ^e)
+		{
+			LOGWARN("Unable to copy file to local folder: " + (String ^)lvi->GetValue(i));
+			LOGWARN(e->Message);
+		}
+
 		worker->ReportProgress((int)(0.5 + 100.0 * i / lvi->Length), "Triaging ...");
 
 		DateTime ^dt;
@@ -274,6 +289,14 @@ System::Void Uploader2::ImportForm::importProcess(Object ^sender, System::Compon
 			return;
 		};
 	}
+	if (p.X != -1 && p.Y != -1)
+	{
+		String ^svrname = svc->uploadAsset("dataset", did, "jpg-aim", folder + "\\aimshot.jpg", msg);
+		file->WriteLine("aimshot:"+svrname);
+		if (msg->Length > 0)
+			MessageBox::Show(msg);
+	}
+	
 	file->Close();
 
 	svc->uploadAsset("dataset", did, "txt", manifest, msg);
@@ -319,11 +342,16 @@ System::Void Uploader2::ImportForm::backgroundWorker1_RunWorkerCompleted(System:
 		MessageBox::Show("Import cancelled");
 	else if (done == false)
 		MessageBox::Show("Import failed");
+	else
+		MessageBox::Show("Import completed successfully");
 
+	// reset for next upload
 	sslStat->Text = "Ready";
 	bImport->Text = "Import";
 	toolStripProgressBar1->Value = 0;
-	this->Close();
+	lvFiles->Items->Clear();
+	tbDesc->Clear();
+	//this->Close();
 }
 System::Void Uploader2::ImportForm::lvFiles_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 	if ((Keys)e->KeyCode == Keys::Delete)

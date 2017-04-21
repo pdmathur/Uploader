@@ -26,6 +26,7 @@ void Main(array<String^>^ args){
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false);
 
+	String ^daemonName;
 	AppPrefs^ prefs = gcnew(AppPrefs);
 	prefs->load();
 
@@ -65,6 +66,12 @@ void Main(array<String^>^ args){
 		else if (args[i]->Equals("daemon"))
 		{
 			prefs->setDaemonMode();
+			daemonName = System::Windows::Forms::SystemInformation::ComputerName;
+		}
+		else if (args[i]->StartsWith("daemon-") && args[i]->Length > 7)
+		{
+			prefs->setDaemonMode();
+			daemonName = args[i]->Substring(7);
 		}
 	}
 
@@ -79,6 +86,59 @@ void Main(array<String^>^ args){
 		LOGINFO("Show Banner");
 		Banner ^b = gcnew Banner();
 		b->ShowDialog();
+	}
+
+	// Cleanup asset folders and log files older than 30 days ...
+	String ^folder = System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta";
+
+	array<String ^> ^ logfilelist = Directory::GetFiles(folder);
+	for (int j = 0; j < logfilelist->Length; j++)
+	{
+		DateTime ^dt = File::GetLastWriteTime(logfilelist[j]).AddDays(30);
+		if (dt->CompareTo(DateTime::Now) < 0 && logfilelist[j]->Contains("\\Trifecta\\ul_")) // file too old
+		{
+			try 
+			{
+				File::Delete(logfilelist[j]);
+				LOGINFO("Removed old log file: " + logfilelist[j]);
+			}
+			catch (Exception ^)
+			{
+				LOGWARN("Could not delete old file: " + logfilelist[j]);
+			}
+
+		}
+	}
+
+	folder = System::Environment::GetEnvironmentVariable("APPDATA") + "\\Trifecta\\Uploader";
+
+	try {
+		if (!Directory::Exists(folder))
+			Directory::CreateDirectory(folder);
+	}
+	catch (Exception ^)
+	{
+		MessageBox::Show("Cannot continue.  Basic setup is not (being allowed to) complete.");
+	}
+
+	array<String ^> ^ dirlist = Directory::GetDirectories(folder);
+	for (int jj = 0; jj < dirlist->Length; jj++)
+	{
+		DateTime ^dt = Directory::GetLastWriteTime(dirlist[jj]).AddDays(30);
+		if (dt->CompareTo(DateTime::Now) < 0 ) // dir too old
+		{
+			if (File::Exists(dirlist[jj] + "\\manifest.txt") || File::Exists(dirlist[jj] + "\\dlmanifest.txt"))
+			try
+			{
+				Directory::Delete(dirlist[jj],true); // recursive
+				LOGINFO("Removed old directory: " + dirlist[jj]);
+			}
+			catch (Exception ^e)
+			{
+				LOGWARN("Could not delete old directory: " + dirlist[jj]+ " " + e->Message);
+			}
+
+		}
 	}
 
 	Services ^svc = gcnew Services(log, prefs->localMode());
@@ -216,10 +276,12 @@ void Main(array<String^>^ args){
 
 						Console::WriteLine("Done processing videos");
 
+						/* ==== Skip uploads ==== 
+
 						String ^evId;
 						String ^fieldid = a->getVFid();
 						String ^uid = a->getUid();
-						String ^desc = a->getDescription() + "(" + System::Windows::Forms::SystemInformation::ComputerName + ")";
+						String ^desc = a->getDescription() + "(" + daemonName + ")";
 
 						Point tl(0, 0);
 						for (int i = 0; i < a->getVideoCount(); i++)
@@ -234,7 +296,7 @@ void Main(array<String^>^ args){
 						LOGINFO("Upload: set top-left reference to " + tl.X + ", " + tl.Y);
 						evId = svc->createEvent4(fieldid, uid, desc,
 							Point(a->getAimPoint().X - tl.X - es.Width / 2, a->getAimPoint().Y - tl.Y - es.Height / 2),
-							a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate(), ds[4][0] /*teamid*/);
+							a->getAimRadius(), Drawing::Size(es.Width, es.Height), a->getShootDate(), ds[4][0] );
 
 						LOGINFO("Event id from server is: " + evId);
 
@@ -342,6 +404,8 @@ void Main(array<String^>^ args){
 						svc->checkinDataset(ds[0][0], evId, msg);
 						if (msg->Length > 0)
 							Console::WriteLine(msg);
+
+							=== End of upload === */
 					}
 
 				} // if no error 
@@ -372,7 +436,7 @@ System::Void Uploader2::LauncherForm::LauncherForm_Load(System::Object^  sender,
 	workfolder = "";
 }
 System::Void Uploader2::LauncherForm::button1_Click(System::Object^  sender, System::EventArgs^  e) {
-	ImportForm ^importForm = gcnew ImportForm(log, svc, this->prefs, this->team);
+	ImportForm ^importForm = gcnew ImportForm(log, svc, this->prefs, this->team, false); // assume analyzer
 	this->Hide();
 	importForm->ShowDialog();
 	this->Show();

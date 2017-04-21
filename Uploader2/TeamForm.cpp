@@ -28,12 +28,27 @@ System::Boolean Uploader2::TeamForm::loadTeams()
 
 System::Void Uploader2::TeamForm::TeamForm_Load(System::Object^  sender, System::EventArgs^  e){
 	// hide stuff if we aren't admin
-	if (! userIsAdmin)
-		this->Height = 224;
+	if (!userIsAdmin)
+	{
+		int BorderWidth = (this->Width - this->ClientSize.Width) / 2;
+		int TitlebarHeight = this->Height - this->ClientSize.Height - 2 * BorderWidth;
+
+		this->Height = this->panel1->Location.Y + this->panel1->Height + BorderWidth * 2 + TitlebarHeight + 2; // 215;
+		if (userIsPlayer)
+			this->Height = this->panel1->Location.Y + BorderWidth * 2 + TitlebarHeight + 2; // 118;
+	}
+
 	bCreateTeam->Enabled = userIsAdmin;
 	tbCoachEmail->Enabled = userIsAdmin;
 	tbNewName->Enabled = userIsAdmin;
 	tbCoachNickname->Enabled = userIsAdmin;
+
+	if (userIsPlayer)
+	{
+		bRenameTeam->Enabled = false;
+		bDeleteTeam->Enabled = false;
+		tbRenameName->Enabled = false;
+	}
 
 	loadTeams();
 }
